@@ -17,15 +17,19 @@ flowchart LR
     AuthOK -->|NO| TRYAGAIN{"Try Again?"}
     TRYAGAIN -->|YES| Demo
     TRYAGAIN -->|NO| circleId(("`STOP`"))
-
- 
     Navbar2 --> ManageEntities[["`Manage Entities`"]] --> CreateEntity[["`Create Entity`"]] & ManageOrgChart[["`Manage Org Chart`"]] & ManageTeam[["`Manage Team`"]] & ManageDocuments[["`Manage Documents`"]] & ManageCostCenters[["`Manage Cost Centers`"]] & ManageTax[["`Manage Tax`"]]
+    dbId[["`Datastores`"]]
     CreateEntity --> ValidateAddress[["`Validate Address`"]] --> APIChain
     ManageCostCenters --> ValidateEntities[["`Validate Assigned Entities`"]] & ValidateFunction[["`Validate Assigned Org`"]] --> APIChain
     ManageTeam --> ValidateTeam[["`Validate Team`"]] --> APIChain
-    ManageOrgChart --> ValidateEntities --> APIChain
-    ManageDocuments --> ValidateAssignemnt[["`Validate Assignments`"]] --> APIChain
+    ManageOrgChart --> ValidateTeam
+    ValidateTeam --> ValidateEntities --> APIChain
     ManageTax --> ManageTaxDates[["`Manage Tax Authorities`"]] & ManageTaxStandard[["`Manage Tax Codes`"]]
     ManageTaxDates --> ValidateFunction --> APIChain
+    ManageDocuments --> APIChain
+    APIChain ==> dbId
+    LoadExistingEntities --> APIChain
+    ManageEntities --> LoadExistingEntities
+    APIChain ==> ManageEntities
 ```
 
