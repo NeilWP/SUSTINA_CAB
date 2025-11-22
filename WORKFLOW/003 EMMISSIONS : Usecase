@@ -2,10 +2,6 @@
 Below is the most recent version of the DEMO functionality in readienss for the CAB.
 
 ```mermaid
----
-config:
-  layout: elk
----
 flowchart TD
     A(["Start"]) --> register[Register]
     register --> E("Sign In")
