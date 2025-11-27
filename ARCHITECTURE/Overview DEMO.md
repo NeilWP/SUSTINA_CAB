@@ -1,5 +1,5 @@
 # Sustina Platform – Map of Demo Functionality
-Below is the most recent version of the DEMO functionality in readienss for the CAB.
+Below is the most recent version of the DEMO functionality in readiness for the CAB.
 NOTE THE CLEAN BREAK  between anonymous and Authorisied functionality
 
 ```mermaid
