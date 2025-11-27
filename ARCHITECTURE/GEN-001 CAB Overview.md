@@ -1,6 +1,7 @@
 # Sustina Platform – Map of Demo Functionality
 Below is the most recent version of the DEMO functionality in readiness for the CAB.
-NOTE The workflow is an illustrative  non technicla overview to assist particpanet of the CAB to undertand oour offering and to stimulate thought and  inputs to the design meetings.
+NOTE The workflow is an illustrative  non technicla overview to assist participants of the CAB to undertand our offering and to stimulate thought and  inputs to the design meetings.  
+The detailed descritpon of the product ae to be found in the folder WORKFLOW.
 
 | **Document ID** | **Version** | **Status** | **Owner** | **Last Review** |
 | :--- | :--- | :--- | :--- | :--- |
