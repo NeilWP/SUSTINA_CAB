@@ -1,2 +1,2 @@
 # SUSTINA_CAB
-A public repository  facilitating the CAB and evaluation phases of "SUSTINA" - bringing business advantage and investor opportunities through ESG strategy
+A public repository  facilitating the CAB and evaluation phases of "SUSTINA" - seeking business opportunities from strategised ESG management
