@@ -1,12 +1,17 @@
-# Process Specification: P-001 (Procurement Master Workflow)
+# Process Specification: P- (Procurement Master Workflow)
 
 | **Document ID** | **Version** | **Status** | **Owner (Author)** | **Approved By** |**Approved On** |
 | :--- | :--- | :--- | :--- | :--- |:--- |
-| PROC-02 | 1.0.0 | **DRAFT** | Business Architect | Product Officer | | 
+| P- | 1.0.0 | **DRAFT** | Business Architect | Product Officer | | 
 
 ## 1. Description & Scope
 This document defines the master architectural workflow for the **Procurement & Scope 3 Data Ingestion** module.
-* **Objective:** To securely ingest, validate, and categorize supply chain data to calculate Scope 3 (Category 1) emissions in compliance with the GHG Protocol.
+* **Naming Convention:**
+    * All objects owned by this workflow are dsignated by the ALpha prefix "P-" followed by a numeric ID.
+    * Objects not owned by this workflow but impacting it (creating a dependency) will bear an alternative pair of characters followed by a numeric id. 
+* **Objective:**
+    * To securely ingest, validate, and categorize supply chain data to calculate Scope 3 (Category 1) emissions in compliance with the GHG Protocol.
+    * To  introduce the  objects supporting the workflow whcih are then described in other pages.
 * **Access Control:** Strict **Role-Based Access Control (RBAC)** is enforced. The flow creates a dependency on **M-002 (Authentication)**; only authenticated sessions with `WRITE_SCOPE_3` permissions may initiate this routine.
 
 ## 2. Process Flow Diagram
