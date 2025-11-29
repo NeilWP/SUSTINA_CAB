@@ -1,0 +1,41 @@
+{
+    "header": {
+        "generation_timestamp": "2025-11-28T14:39:03.847566",
+        "user_settings": {
+            "target_budget": 1000000.0,
+            "target_count": 1,
+            "date_range_start": "2024-01-01",
+            "date_range_end": "2024-12-31",
+            "include_refunds": false,
+            "include_orphans": false
+        },
+        "source_files": {
+            "entities": "dim_entities_hierarchy.json",
+            "catalogs": "reference_data_catalogs.jsonl"
+        }
+    },
+    "expected_outcome": {
+        "row_count": 1,
+        "total_spend": 38986133.28,
+        "min_spend": 38986133.28,
+        "max_spend": 38986133.28,
+        "mean_spend": 38986133.28,
+        "negative_count": 0
+    },
+    "reconciliation": {
+        "actual_sum": 38986133.28,
+        "status": "PASS"
+    },
+    "data": [
+        {
+            "id": "a82c8028-4b8d-4483-a621-c5d4d6d58608",
+            "date": "2024-12-16",
+            "buyer": "Ouroboros Smelting",
+            "supplier": "Global Logistics",
+            "item": "Last Mile Delivery",
+            "gl": "6200-LOG",
+            "amount": 38986133.28,
+            "currency": "USD"
+        }
+    ]
+}

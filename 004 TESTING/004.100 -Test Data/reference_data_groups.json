@@ -1,0 +1,27 @@
+{
+  "hierarchies": [
+    {
+      "group_name": "The Impossible Company",
+      "structure_type": "Complex/Conglomerate",
+      "levels": [
+        {"name": "Impossible Global HQ", "type": "Holding", "location": "US"},
+        
+        { "name": "Impossible Digital", "type": "Subsidiary", "parent": "Impossible Global HQ", "location": "US"},
+        { "name": "Impossible Logistics", "type": "Subsidiary", "parent": "Impossible Global HQ", "location": "US"},
+
+        { "name": "ID Cloud Services", "type": "Division", "parent": "Impossible Digital", "location": "IE"},
+        { "name": "ID Server Farm A", "type": "Facility", "parent": "ID Cloud Services", "location": "IE"},
+        { "name": "ID Server Farm B", "type": "Facility", "parent": "ID Cloud Services", "location": "IE"},
+        
+        { "name": "Chimera Group (Acquired)", "type": "Holding", "parent": "Impossible Global HQ", "location": "DE"},
+        { "name": "Chimera Automotive", "type": "Division", "parent": "Chimera Group (Acquired)", "location": "DE"},
+        { "name": "Chimera Factory Munich", "type": "Factory", "parent": "Chimera Automotive", "location": "DE"},
+        { "name": "Chimera Paint Shop", "type": "Unit", "parent": "Chimera Factory Munich", "location": "DE"},
+        
+        { "name": "Ouroboros Recycling", "type": "Subsidiary", "parent": "Impossible Global HQ", "location": "CN"},
+        { "name": "Ouroboros Sorting", "type": "Facility", "parent": "Ouroboros Recycling", "location": "CN"},
+        { "name": "Ouroboros Smelting", "type": "Facility", "parent": "Ouroboros Recycling", "location": "CN"}
+      ]
+    }
+  ]
+}

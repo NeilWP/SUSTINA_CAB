@@ -1,0 +1,3 @@
+{"supplier_name": "Acme Steel Co", "sector": "Manufacturing", "products": [{"name": "Rolled Steel Sheets", "gl": "7300-RAW"}, {"name": "Steel Beams", "gl": "7300-RAW"}, {"name": "Blast Furnace Maintenance", "gl": "6000-SVC"}]}
+{"supplier_name": "Nebula Cloud", "sector": "Software", "products": [{"name": "Server Hosting Tier 1", "gl": "5100-IT"}, {"name": "SaaS Subscription", "gl": "5100-SW"}, {"name": "Database fees", "gl": "GL: 9000-IT"}, {"name": "Database Licenses", "gl": null, "is_active": false}]}
+{"supplier_name": "Global Logistics", "sector": "Transport", "products": [{"name": "Freight Shipping (Sea)", "gl": "6200-LOG"}, {"name": "Last Mile Delivery", "gl": "6200-LOG"}]}

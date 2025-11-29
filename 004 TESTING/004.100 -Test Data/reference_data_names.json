@@ -1,0 +1,5 @@
+{
+    "prefixes": ["Global", "Acme", "Nexus", "Omega", "Terra", "Apex", "Zenith", "Horizon", "Pacific", "Euro", "Sustaina", "Green", "Future"],
+    "roots": ["Logistics", "Systems", "Holdings", "Dynamics", "Industries", "Metals", "Solutions", "Technologies", "Energy", "Networks"],
+    "suffixes": ["Corp", "Inc", "GmbH", "Ltd", "LLC", "SA", "Pty Ltd", "Group", "AG"]
+}

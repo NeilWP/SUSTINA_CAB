@@ -1,0 +1,101 @@
+gl_code,gl_description,nace_code,method
+6200-0001,Courier Svc - Ref 207,H.49.41,AI_Prediction
+7300-0002,Scrap Metal - Ref 687,C.24.10,AI_Prediction
+5500-0003,Legal Retainer - Ref 917,M.69.10,AI_Prediction
+2200-0004,Gas Supply - Ref 430,D.35.11,AI_Prediction
+5100-0005,Cloud Hosting - Ref 536,J.62.01,AI_Prediction
+6200-0006,Shipping - Ref 997,H.49.41,AI_Prediction
+7300-0007,Steel Rods - Ref 760,C.24.10,AI_Prediction
+5500-0008,Consulting - Ref 795,M.69.10,AI_Prediction
+2200-0009,Steam Gen - Ref 395,D.35.11,AI_Prediction
+5100-0010,Software Lic - Ref 960,J.62.01,Manual_Audit
+6200-0011,Freight Fwd - Ref 784,H.49.41,AI_Prediction
+7300-0012,Steel Rods - Ref 565,C.24.10,AI_Prediction
+5500-0013,Consulting - Ref 951,M.69.10,AI_Prediction
+2200-0014,Power - Ref 731,D.35.11,AI_Prediction
+5100-0015,SaaS Sub - Ref 401,J.62.01,AI_Prediction
+6200-0016,Shipping - Ref 635,H.49.41,AI_Prediction
+7300-0017,Steel Rods - Ref 696,C.24.10,AI_Prediction
+5500-0018,Legal Retainer - Ref 310,M.69.10,AI_Prediction
+2200-0019,Gas Supply - Ref 760,D.35.11,AI_Prediction
+5100-0020,SaaS Sub - Ref 478,J.62.01,Manual_Audit
+6200-0021,Trucking Fee - Ref 163,H.49.41,AI_Prediction
+7300-0022,Steel Rods - Ref 197,C.24.10,AI_Prediction
+5500-0023,Consulting - Ref 286,M.69.10,AI_Prediction
+2200-0024,Electricity Grid - Ref 509,D.35.11,AI_Prediction
+5100-0025,Software Lic - Ref 742,J.62.01,AI_Prediction
+6200-0026,Shipping - Ref 371,H.49.41,AI_Prediction
+7300-0027,Steel Rods - Ref 937,C.24.10,AI_Prediction
+5500-0028,Consulting - Ref 212,M.69.10,AI_Prediction
+2200-0029,Gas Supply - Ref 583,D.35.11,AI_Prediction
+5100-0030,IT Support - Ref 482,J.62.01,Manual_Audit
+6200-0031,Trucking Fee - Ref 522,H.49.41,AI_Prediction
+7300-0032,Steel Rods - Ref 786,C.24.10,AI_Prediction
+5500-0033,Consulting - Ref 798,M.69.10,AI_Prediction
+2200-0034,Power - Ref 214,D.35.11,AI_Prediction
+5100-0035,Cloud Hosting - Ref 519,J.62.01,AI_Prediction
+6200-0036,Courier Svc - Ref 349,H.49.41,AI_Prediction
+7300-0037,Raw Copper - Ref 561,C.24.10,AI_Prediction
+5500-0038,Consulting - Ref 290,M.69.10,AI_Prediction
+2200-0039,Power - Ref 383,D.35.11,AI_Prediction
+5100-0040,SaaS Sub - Ref 323,J.62.01,Manual_Audit
+6200-0041,Shipping - Ref 103,H.49.41,AI_Prediction
+7300-0042,Iron Ore - Ref 127,C.24.10,AI_Prediction
+5500-0043,Consulting - Ref 965,M.69.10,AI_Prediction
+2200-0044,Electricity Grid - Ref 771,D.35.11,AI_Prediction
+5100-0045,IT Support - Ref 111,J.62.01,AI_Prediction
+6200-0046,Shipping - Ref 870,H.49.41,AI_Prediction
+7300-0047,Iron Ore - Ref 367,C.24.10,AI_Prediction
+5500-0048,Compliance - Ref 639,M.69.10,AI_Prediction
+2200-0049,Steam Gen - Ref 430,D.35.11,AI_Prediction
+5100-0050,Software Lic - Ref 319,J.62.01,Manual_Audit
+6200-0051,Shipping - Ref 474,H.49.41,AI_Prediction
+7300-0052,Steel Rods - Ref 500,C.24.10,AI_Prediction
+5500-0053,Compliance - Ref 247,M.69.10,AI_Prediction
+2200-0054,Gas Supply - Ref 412,D.35.11,AI_Prediction
+5100-0055,SaaS Sub - Ref 313,J.62.01,AI_Prediction
+6200-0056,Shipping - Ref 368,H.49.41,AI_Prediction
+7300-0057,Steel Rods - Ref 189,C.24.10,AI_Prediction
+5500-0058,Legal Retainer - Ref 354,M.69.10,AI_Prediction
+2200-0059,Steam Gen - Ref 551,D.35.11,AI_Prediction
+5100-0060,Cloud Hosting - Ref 983,J.62.01,Manual_Audit
+6200-0061,Freight Fwd - Ref 569,H.49.41,AI_Prediction
+7300-0062,Raw Copper - Ref 742,C.24.10,AI_Prediction
+5500-0063,Consulting - Ref 330,M.69.10,AI_Prediction
+2200-0064,Power - Ref 956,D.35.11,AI_Prediction
+5100-0065,Software Lic - Ref 995,J.62.01,AI_Prediction
+6200-0066,Freight Fwd - Ref 360,H.49.41,AI_Prediction
+7300-0067,Scrap Metal - Ref 626,C.24.10,AI_Prediction
+5500-0068,Legal Retainer - Ref 180,M.69.10,AI_Prediction
+2200-0069,Power - Ref 956,D.35.11,AI_Prediction
+5100-0070,Software Lic - Ref 718,J.62.01,Manual_Audit
+6200-0071,Shipping - Ref 848,H.49.41,AI_Prediction
+7300-0072,Iron Ore - Ref 893,C.24.10,AI_Prediction
+5500-0073,Legal Retainer - Ref 997,M.69.10,AI_Prediction
+2200-0074,Gas Supply - Ref 837,D.35.11,AI_Prediction
+5100-0075,SaaS Sub - Ref 482,J.62.01,AI_Prediction
+6200-0076,Freight Fwd - Ref 520,H.49.41,AI_Prediction
+7300-0077,Scrap Metal - Ref 892,C.24.10,AI_Prediction
+5500-0078,Consulting - Ref 241,M.69.10,AI_Prediction
+2200-0079,Power - Ref 594,D.35.11,AI_Prediction
+5100-0080,IT Support - Ref 428,J.62.01,Manual_Audit
+6200-0081,Trucking Fee - Ref 844,H.49.41,AI_Prediction
+7300-0082,Steel Rods - Ref 229,C.24.10,AI_Prediction
+5500-0083,Compliance - Ref 768,M.69.10,AI_Prediction
+2200-0084,Electricity Grid - Ref 274,D.35.11,AI_Prediction
+5100-0085,Cloud Hosting - Ref 865,J.62.01,AI_Prediction
+6200-0086,Freight Fwd - Ref 522,H.49.41,AI_Prediction
+7300-0087,Steel Rods - Ref 185,C.24.10,AI_Prediction
+5500-0088,Legal Retainer - Ref 264,M.69.10,AI_Prediction
+2200-0089,Gas Supply - Ref 132,D.35.11,AI_Prediction
+5100-0090,Cloud Hosting - Ref 834,J.62.01,Manual_Audit
+6200-0091,Courier Svc - Ref 866,H.49.41,AI_Prediction
+7300-0092,Iron Ore - Ref 290,C.24.10,AI_Prediction
+5500-0093,Consulting - Ref 830,M.69.10,AI_Prediction
+2200-0094,Steam Gen - Ref 115,D.35.11,AI_Prediction
+5100-0095,Software Lic - Ref 527,J.62.01,AI_Prediction
+6200-0096,Freight Fwd - Ref 629,H.49.41,AI_Prediction
+7300-0097,Iron Ore - Ref 572,C.24.10,AI_Prediction
+5500-0098,Audit Fee - Ref 161,M.69.10,AI_Prediction
+2200-0099,Gas Supply - Ref 205,D.35.11,AI_Prediction
+5100-0100,Software Lic - Ref 419,J.62.01,Manual_Audit

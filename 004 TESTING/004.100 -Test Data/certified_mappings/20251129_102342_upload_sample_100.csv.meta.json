@@ -1,0 +1,14 @@
+{
+    "original_filename": "upload_sample_100.csv",
+    "ingested_at": "20251129_102342",
+    "attestation": {
+        "signed_by": "nwpnow@gmail.com",
+        "authority_confirmed": true,
+        "accuracy_confirmed": true,
+        "ip_address": "LOCAL_CLIENT"
+    },
+    "file_stats": {
+        "size_bytes": 5449,
+        "format": "CSV (.csv)"
+    }
+}
