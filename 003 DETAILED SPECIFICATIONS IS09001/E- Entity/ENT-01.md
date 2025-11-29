@@ -2,7 +2,7 @@
 
 | **Document ID** | **Version** | **Status** | **Owner (Author)** | **Approved By** |**Approved On** |
 | :--- | :--- | :--- | :--- | :--- |:--- |
-| P- | 1.0.0 | **DRAFT** | Business Architect | Product Officer | | 
+| ENT-01 | 1.0.0 | **DRAFT** | Business Architect | Product Officer | | 
 
 ## 1. Description & Scope
 This subroutine handles the detailed onboarding of a new corporate entity. It enforces strict data quality standards (Address & Phone formatting) and legal compliance via a mandatory **User Attestation**.
@@ -66,7 +66,14 @@ flowchart LR
     
     DB --> SUCCESS[["Return: Entity Ref ID"]]
     SUCCESS --> UNLOCK((("Sub-Menus unlocked:<br/>(Teams, Docs, etc.)")))
-
-    
+```
+---
+### Screen shots (Desktop version)
+<table>
+  <tr>
+    <td><img src="../../300%20SCREENSHOTS/ENT-01%20D_declare_top_level_entity.png" width="400" /></td>
+    <td><img src="../../300 SCREENSHOTS/ENT- 01 D_add_child_entity.png" width="400" /></td>
+  </tr>
+</table>
 
 
