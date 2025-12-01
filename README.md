@@ -10,6 +10,24 @@ This repository contains the detailed product documentation to be submitted for 
 
 ## What does SUSTINA allow businesses to do?
 
+
+# 🚀 Carbon Accounting Solution Strategy for SMEs
+
+This document summarizes our planned approach to developing a carbon accounting solution, addressing the key challenges and suggestions raised regarding data, target market, guidance, and competition.
+
+## Strategy Summary Table
+
+| Focus Area | Our Strategic Approach | Key Benefit to SMEs |
+| :--- | :--- | :--- |
+| **1. Conversion Factor Database** | We are building a **proprietary factor library** by **aggregating, curating, and standardizing** data from multiple reputable sources (e.g., UK DESNZ/EPA, IPCC). Our system includes logic to **automatically select** the correct factor based on geography and activity, ensuring proper version control and transparency. | **Auditability & Simplicity:** Ensures factor consistency, proper version control, and eliminates the need for SMEs to be data experts. |
+| **2. Target SMEs** | We target two groups of European SMEs: 1. **Supply-Chain Driven B2B** (clients demand Scope 3 data due to **CSRD**) and 2. **ESG-Conscious Growth SMEs** (seeking competitive advantage/investment). | **Commercial Imperative:** Motivation is driven by client demands and market competitiveness, mitigating the risk of relaxed direct EU regulations. |
+| **3. Scope/Boundary Guidance & Consultancy** | We use a **guided, automated onboarding flow** based on the **GHG Protocol**. This flow asks simple questions to help SMEs define their initial **Scope 1, 2, and Material Scope 3** boundaries. **Optional advisory services** are available for audit readiness. | **Low Cost & Efficiency:** Most SMEs can self-serve the setup, keeping costs down while providing expert support for validation and high-stakes reporting. |
+| **4. Competitor Analysis** | Thorough analysis of leaders like **myclimate** and **Watershed** informed our focus. Our solution prioritizes **simplicity, quick setup, and automated data ingestion** (e.g., accounting system integration). | **Usability & Actionability:** We provide **clear, actionable reduction insights** alongside the footprint calculation, helping SMEs achieve cost savings and efficiency gains. |
+
+## Core Value Proposition
+
+Our core value proposition is transforming complex, expert-driven GHG accounting into a **simple, self-service, and commercially relevant tool** for the average SME.
+
 - **Upload or create data** relevant to:
   - Corporate identity and structure
   - Bulk upload or manual mapping of general ledger codes to industry standards (currently EU/NACE Rev. 2)
