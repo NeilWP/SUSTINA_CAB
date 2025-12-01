@@ -1,6 +1,6 @@
 # SUSTINA_CAB
 
-**SUSTINA** is a product designed for businesses impacted by the introduction of Greenhouse Gas protocoal (GHG) reporting.  
+**SUSTINA** is a product designed for businesses impacted by the introduction of Greenhouse Gas protocol (GHG) reporting.  
 The application runs both as a desktop solution and as a hosted service (React back-office on AWS).
 
 The application is currently seeking **ISO 9001 certification**.  
