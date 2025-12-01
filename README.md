@@ -6,6 +6,8 @@ The application runs both as a desktop solution and as a hosted service (React b
 The application is currently seeking **ISO 9001 certification**.  
 This repository contains the detailed product documentation to be submitted for certification and is safe for public consumption.
 
+Not sure if your business is affected / needs SUSTINA - a good starting point are our background documents.  
+
 ---
 
 ## What does SUSTINA allow businesses to do?
