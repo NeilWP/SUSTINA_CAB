@@ -80,3 +80,63 @@ By consolidating GHG data into a single platform, SUSTINA helps businesses not o
 
 By incorporating supplier impact into GHG assessments, businesses gain a more complete view of their sustainability footprint and can make informed decisions about procurement, partnerships, and compliance.
 
+---
+
+### IFRS and NACE - CHart of Accounts, Financial Reporting  AND Economic activity
+A unique selling point is the capability to leverage the business entities knowledge of their chart of accounts employed in financial reporting and to use the same general ledge codes  ni a mapping to the nace codes 
+
+```mermaid
+flowchart LR
+
+  %% Finance
+  subgraph FIN["Finance"]
+    TX["Posted Transactions"]
+    GL["General Ledger Accounts"]
+  end
+
+  %% Mapping Layer
+  subgraph MAP["Mapping Layer"]
+    COA["Chart of Accounts"]
+    IFRS_CODES["IFRS Reporting Codes"]
+    MAP_IFRS["IFRS Mapping Table (maps GL account to IFRS code)"]
+    MAP_ECON["Activity Mapping Table (maps GL account to Activity code)"]
+  end
+
+  %% Data Platform
+  subgraph DATA["Data Platform"]
+    ENR_IFRS["Enriched Ledger with IFRS codes"]
+    ENR_ECON["Enriched Ledger with Activity codes"]
+    COMBINED["Combined Financial + Activity Dataset"]
+  end
+
+  %% Sustainability
+  subgraph ESG["Sustainability"]
+    METRICS["ESG Metrics (GHG, Energy, KPIs)"]
+    REPORTS["IFRS Sustainability Disclosures"]
+  end
+
+  %% Flows
+  TX --> GL
+  GL --> COA
+  COA --> MAP_IFRS
+  COA --> MAP_ECON
+  MAP_IFRS --> ENR_IFRS
+  MAP_ECON --> ENR_ECON
+  ENR_IFRS --> COMBINED
+  ENR_ECON --> COMBINED
+  COMBINED --> METRICS
+  METRICS --> REPORTS
+
+
+  TX[Transactions] --> GL[GL Accounts]
+  GL --> COA[Chart of Accounts]
+  COA --> M1[IFRS Map]
+  COA --> M2[Activity Map]
+  M1 --> E1[Ledger + IFRS]
+  M2 --> E2[Ledger + Activity]
+  E1 --> C[Combined Dataset]
+  E2 --> C
+  C --> Metrics[ESG Metrics]
+  Metrics --> Reports[Reports]
+```
+
