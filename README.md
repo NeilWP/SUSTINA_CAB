@@ -17,6 +17,33 @@ Not sure if your business is affected / needs SUSTINA - a good starting point ar
 
 This document summarizes our planned approach to developing a carbon accounting solution, addressing the key challenges and suggestions raised regarding data, target market, guidance, and competition.
 
+## Product Vision
+The challenge for most SMEs who are involved in sustainability   topics is the ability to create an accurate and possibly live view of the carbon footprint.
+The challenge of creating a consolidated view of Financial Accounting and Business Activity reporting together in a unified format is a formidable one.
+
+```mermaid
+graph TD
+    subgraph "Stage 1: Input & Intelligence (The Missing Piece)"
+    Raw[Raw GL Data] --> NLP[AI/NLP Engine]
+    IFRS[IFRS Taxonomy DB] --> NLP
+    NACE[NACE Codes DB] --> NLP
+    NLP --> Suggest[Suggestion Engine<br/>'Server Cost' matches 'IFRS: Tech Expense'<br/>'Software Dev' matches 'NACE: 62.01']
+    end
+
+    subgraph "Stage 2: Human Review (The Current GUI)"
+    Suggest --> Human[User Review Grid]
+    Human -- "Accept/Override" --> Approved[Approved Model]
+    end
+
+    subgraph "Stage 3: Delivery (What we just built)"
+    Approved --> Generator[XBRL Generator]
+    Generator --> ZIP[Final ZIP Package]
+    end
+    
+    style NLP fill:#f9f,stroke:#333,stroke-width:2px
+    style Generator fill:#bbf,stroke:#333,stroke-width:2px
+```
+
 ## Strategy Summary Table
 
 | Focus Area | Our Strategic Approach | Key Benefit to SMEs |
