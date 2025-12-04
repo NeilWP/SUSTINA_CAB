@@ -35,14 +35,14 @@ erDiagram
 
     %% RELATIONSHIP: Recursive Hierarchy (Parent/Child)
     %% The 'o{' end indicates that a single Parent (||) can have zero or more (o{) Children.
-    Entity_CorporateEntity ||--o{ Entity_CorporateEntity : "has children (Hierarchy)"
+    CorporateEntity ||--o{ CorporateEntity : "has children (Hierarchy)"
 
 
 
     %% =======================================================
     %% 1. THE CORE OBJECT (The Single Source)
     %% =======================================================
-    Entity_CorporateEntity {
+    CorporateEntity {
         int CorporateEntityId PK
         uniqueidentifier CorporateEntityGuid "Global ID"
         int ParentEntityId FK "Hierarchy Link"
@@ -58,7 +58,7 @@ erDiagram
         string Description
     }
 
-    Entity_Internal_Classification {
+    CorporateEntity_Internal_Classification {
         int Classification_ID PK
         int CorporateEntityId FK
         string Classification_Type "DIVISION, OFFICE"
@@ -80,16 +80,16 @@ erDiagram
     %% =======================================================
 
     %% A. Internal Hierarchy & Segmentation
-    Entity_CorporateEntity ||--o{ Entity_CorporateEntity : "has children (Hierarchy)"
-    Entity_CorporateEntity ||--o{ Entity_Internal_Classification : "is segmented by"
+    CorporateEntity ||--o{ CorporateEntity : "has children (Hierarchy)"
+    CorporateEntity ||--o{ CorporateEntity_Internal_Classification : "is segmented by"
 
     %% B. External Identity & Legal Status
-    Ref_Legal_Status_Master ||--o{ Entity_CorporateEntity : "defines legal status"
-    Ref_Business_Object_Type ||--o{ Entity_CorporateEntity : "is classified as"
+    Ref_Legal_Status_Master ||--o{ CorporateEntity : "defines legal status"
+    Ref_Business_Object_Type ||--o{ CorporateEntity : "is classified as"
 
     %% C. Role Overlap (Supplier/Client)
     %% An entity becomes a supplier when linked in this table
-    Entity_CorporateEntity ||..o| Procurement_Supplier_Master : "is supplier (if linked)"
+    CorporateEntity ||..o| Procurement_Supplier_Master : "is supplier (if linked)"
 ```
 
 ## Core Details
