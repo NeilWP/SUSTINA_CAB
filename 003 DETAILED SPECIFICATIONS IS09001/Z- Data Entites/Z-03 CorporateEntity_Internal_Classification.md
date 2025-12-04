@@ -14,11 +14,10 @@ erDiagram
     %% 1. THE CORE OBJECT (The Single Source)
     %% =======================================================
     CorporateEntity_Internal_Classification {
-        int CorporateEntityId PK
-        uniqueidentifier CorporateEntityGuid "Global ID"
-        int ParentEntityId FK "Hierarchy Link"
-        nvarchar EntityName
-        string EntityType "Soft Link -> Legal_Status"
+        int Classification_ID PK
+        int CorporateEntityId FK
+        string Classification_Type "DIVISION, OFFICE"
+        string Classification_Value
     }
 ```
 
