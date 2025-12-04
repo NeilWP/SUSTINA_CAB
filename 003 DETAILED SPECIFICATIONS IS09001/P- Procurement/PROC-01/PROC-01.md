@@ -5,6 +5,75 @@
 | PROC-01 | 1.0.0 | **DRAFT** | Business Architect | Product Officer |
 
 
+# Process flow  PROC-01
+
+```mermaid
+flowchart LR
+    %% =======================================================
+    %% STYLING: HIGH CONTRAST WIREFRAME
+    %% =======================================================
+    classDef nodeStyle fill:none,stroke:#ffffff,stroke-width:2px,color:#ffffff;
+    classDef dbStyle fill:none,stroke:#ffffff,stroke-width:2px,stroke-dasharray: 2 2,color:#ffffff;
+    linkStyle default stroke:#ffffff,stroke-width:2px;
+
+    %% =======================================================
+    %% 1. ENTRY
+    %% =======================================================
+    START((Start)) --> UI_04{"ID: UI-04<br/>Action Hub"}
+
+    %% =======================================================
+    %% 2. INGESTION (THE SOURCE)
+    %% =======================================================
+    UI_04 -- "Action: Ingest" --> PROC_01
+    
+    PROC_01[["ID: PROC-01<br/>Ingestion<br/>(File / Manual)"]]
+
+    %% =======================================================
+    %% 3. THE OUTPUTS (Branching)
+    %% =======================================================
+    
+    %% Output A: It's a New Supplier -> Send to MDM
+    PROC_01 -- "Output:<br/>New Supplier" --> PROC_21[["ID: PROC-21<br/>Upsert Supplier"]]
+    
+    %% Output B: It's a PO -> Send to Audit
+    PROC_01 -- "Output:<br/>PO Data" --> PROC_09[["ID: PROC-09<br/>PO Analyzer"]]
+
+    %% Output C: It's an Invoice -> Send to Audit
+    PROC_01 -- "Output:<br/>Invoice Data" --> PROC_10[["ID: PROC-10<br/>Inv Analyzer"]]
+
+    %% Output D: It's an Expense -> Send to Audit
+    PROC_01 -- "Output:<br/>Expense Data" --> PROC_11[["ID: PROC-11<br/>Exp Analyzer"]]
+
+    %% =======================================================
+    %% 4. DOWNSTREAM PROCESSING
+    %% =======================================================
+    
+    %% Supplier MDM Storage
+    PROC_21 --> DAT_SUP[("ID: DAT-SUP<br/>Supplier DB")]
+    
+    subgraph PROC_ENGINE [Audit Engine]
+        direction LR
+        %% Analyzers feed Intelligence
+        PROC_09 & PROC_10 & PROC_11 --> PROC_03[["ID: PROC-03<br/>ML Classifier"]]
+        
+        %% Intelligence feeds Ledger
+        PROC_03 --> PROC_08[["ID: PROC-08<br/>Ledger Write"]]
+        PROC_08 --> DAT_02[("ID: DAT-02<br/>S3 Ledger")]
+    end
+
+    %% =======================================================
+    %% STYLES
+    %% =======================================================
+    class START,UI_04,PROC_01,PROC_21,PROC_09,PROC_10,PROC_11,PROC_03,PROC_08 nodeStyle;
+    class DAT_SUP,DAT_02 dbStyle;
+    
+    style PROC_ENGINE fill:none,stroke:#ffffff,stroke-width:1px,color:#ffffff,stroke-dasharray: 5 5
+```
+---
+
+
+
+
 ## 1. The Strategy: "Async Import Pattern"
 To handle large Procurement Ledgers (50,000+ rows) without connection timeouts, we utilize an asynchronous **Presigned URL Pattern**:
 1.  **Client** requests permission to upload.
