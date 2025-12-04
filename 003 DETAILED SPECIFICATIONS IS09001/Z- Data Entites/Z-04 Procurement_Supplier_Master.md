@@ -12,12 +12,14 @@ See the dedictaed pages for the objects related to the CorporateEntity object
 ```mermaid
 erDiagram
     %% ==========================================
-    %% 1. SUPPLIER MASTER DATA
+    %% 1. SUPPLIER MASTER DATA (Financial Hub)
     %% ==========================================
     Procurement_Supplier_Master {
         int Supplier_ID PK
         string Supplier_Name
-        string Default_NACE_Code "Initial Hint (Optional)"
+        string Default_NACE_Code "Initial Activity Hint"
+        string Default_AP_Account_Code "Financial Link (New)"
+        string Default_Cost_Center_Code "Financial Link (New)"
     }
 
     %% ==========================================
@@ -35,7 +37,7 @@ erDiagram
     }
 
     %% ==========================================
-    %% 3. JUNCTION TABLE (The Many-to-Many Link)
+    %% 3. JUNCTION TABLE (Activity Map)
     %% ==========================================
     Procurement_Supplier_Activity_Map {
         int Map_ID PK
@@ -55,7 +57,7 @@ erDiagram
     %% RELATIONSHIPS
     %% ==========================================
     
-    %% A. NACE Version Control (One Version to Many Codes)
+    %% A. NACE Version Control 
     Ref_NACE_Version_Master ||..o{ Ref_NACE_Code_Master : "governs codes in"
     
     %% B. The Many-to-Many Association
