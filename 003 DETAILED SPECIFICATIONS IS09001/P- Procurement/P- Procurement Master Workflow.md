@@ -20,131 +20,161 @@ This document defines the master architectural workflow for the **Procurement & 
 
 ```mermaid
 flowchart LR
-    %% ==========================================
-    %% SYSTEM ENTRY & SECURITY LAYER
-    %% ==========================================
-    START((Start)) --> SEC_01[["ID: SEC-01<br/>Auth & SSO Logic<br/>(OAuth/SAML)"]]
+    %% =======================================================
+    %% STYLING: HIGH CONTRAST WIREFRAME
+    %% =======================================================
+    classDef nodeStyle fill:none,stroke:#ffffff,stroke-width:2px,color:#ffffff;
+    classDef dbStyle fill:none,stroke:#ffffff,stroke-width:2px,stroke-dasharray: 2 2,color:#ffffff;
+    linkStyle default stroke:#ffffff,stroke-width:2px;
+
+    %% =======================================================
+    %% 1. ENTRY
+    %% =======================================================
+    START((Start)) --> UI_04{"ID: UI-04<br/>Action Hub"}
+
+    %% =======================================================
+    %% 2. INGESTION (THE SOURCE)
+    %% =======================================================
+    UI_04 -- "Action: Ingest" --> PROC_01
     
-    SEC_01 --> UI_01["ID: UI-01<br/>Navbar Component<br/>(Role-Based View)"]
+    PROC_01[["ID: PROC-01<br/>Ingestion<br/>(File / Manual)"]]
+
+    %% =======================================================
+    %% 3. THE OUTPUTS (Branching)
+    %% =======================================================
     
-    UI_01 --> UI_02{"ID: UI-02<br/>Action Router"}
-
-    %% ==========================================
-    %% ENTITY MANAGEMENT (CORE)
-    %% ==========================================
-    UI_02 -- "Manage Entities" --> UI_03["ID: UI-03<br/>Entity Dashboard"]
+    %% Output A: It's a New Supplier -> Send to MDM
+    PROC_01 -- "Output:<br/>New Supplier" --> PROC_21[["ID: PROC-21<br/>Upsert Supplier"]]
     
-    UI_03 --> API_01["ID: API-01<br/>GET /entities"]
-    API_01 --> DAT_01[("ID: DAT-01<br/>Entity Store<br/>(PostgreSQL)")]
-    DAT_01 -.-> UI_03
+    %% Output B: It's a PO -> Send to Audit
+    PROC_01 -- "Output:<br/>PO Data" --> PROC_09[["ID: PROC-09<br/>PO Analyzer"]]
 
-    %% ==========================================
-    %% ACTION HUB
-    %% ==========================================
-    UI_03 --> UI_04{"ID: UI-04<br/>Action Select"}
+    %% Output C: It's an Invoice -> Send to Audit
+    PROC_01 -- "Output:<br/>Invoice Data" --> PROC_10[["ID: PROC-10<br/>Inv Analyzer"]]
 
-    %% ADMIN BRANCH
-    UI_04 -- "Config Org" --> ENT_01[["ID: ENT-01<br/>Org Chart Module"]]
-    UI_04 -- "Config Tax" --> ENT_02[["ID: ENT-02<br/>Tax Rules Engine"]]
+    %% Output D: It's an Expense -> Send to Audit
+    PROC_01 -- "Output:<br/>Expense Data" --> PROC_11[["ID: PROC-11<br/>Exp Analyzer"]]
+
+    %% =======================================================
+    %% 4. DOWNSTREAM PROCESSING
+    %% =======================================================
     
-    %% ==========================================
-    %% THE PROCUREMENT AUDIT BRANCH (Detailed)
-    %% ==========================================
-    UI_04 -- "Scope 3 Ingest" --> PROC_01[/"ID: PROC-01<br/>File Uploader<br/>(Parser Service)"/]
-
-    PROC_01 --> PROC_02{"ID: PROC-02<br/>Data Validator"}
-
-    %% PROC AI MAPPING
-    PROC_02 -- "Unmapped" --> PROC_03[["ID: PROC-03<br/>ML Classifier<br/>(Vendor -> Category)"]]
+    %% Supplier MDM Storage
+    PROC_21 --> DAT_SUP[("ID: DAT-SUP<br/>Supplier DB")]
     
-    %% PROC CALCULATION ENGINES
-    PROC_02 -- "Clean" --> PROC_04{"ID: PROC-04<br/>Method Router"}
+    subgraph PROC_ENGINE [Audit Engine]
+        direction LR
+        %% Analyzers feed Intelligence
+        PROC_09 & PROC_10 & PROC_11 --> PROC_03[["ID: PROC-03<br/>ML Classifier"]]
+        
+        %% Intelligence feeds Ledger
+        PROC_03 --> PROC_08[["ID: PROC-08<br/>Ledger Write"]]
+        PROC_08 --> DAT_02[("ID: DAT-02<br/>S3 Ledger")]
+    end
 
-    PROC_04 -- "Spend Data" --> PROC_05[["ID: PROC-05<br/>EEIO Spend Engine<br/>(Inflation + Factor)"]]
-    PROC_04 -- "Activity Data" --> PROC_06[["ID: PROC-06<br/>LCA Factor Engine<br/>(Mass * CO2e)"]]
-    PROC_04 -- "Supplier Data" --> PROC_07[["ID: PROC-07<br/>PCF Ingestion<br/>(Primary Data)"]]
-
-    %% CONSOLIDATION
-    PROC_03 & PROC_05 & PROC_06 & PROC_07 --> PROC_08("ID: PROC-08<br/>Scope 3 Consolidator")
+    %% =======================================================
+    %% STYLES
+    %% =======================================================
+    class START,UI_04,PROC_01,PROC_21,PROC_09,PROC_10,PROC_11,PROC_03,PROC_08 nodeStyle;
+    class DAT_SUP,DAT_02 dbStyle;
     
-    PROC_08 --> DAT_02[("ID: DAT-02<br/>Scope 3 Ledger")]
+    style PROC_ENGINE fill:none,stroke:#ffffff,stroke-width:1px,color:#ffffff,stroke-dasharray: 5 5
 ```
 ---
 
 ## Entity Relationship diagram for Procurement
 ```mermaid
 erDiagram
-    %% =============================================
-    %% 1. INGEST LAYER (PROC-01)
-    %% =============================================
-    Staging_Ingest_Batch {
-        bigint Batch_ID PK
-        string Filename
-        string Status
-    }
-
-    Staging_Procurement_Row_Raw {
-        bigint Row_ID PK
-        bigint Batch_ID "Link -> Batch"
-        string Raw_Supplier_Name
-        string Raw_Spend_Amount
-        string Validation_Status "UNMAPPED/READY"
-    }
-
-    %% =============================================
-    %% 2. MAPPING LOGIC (PROC-03)
-    %% =============================================
-    ML_Config_Vendor_Map_Rules {
-        int Rule_ID PK
-        string Keyword_Pattern "e.g. %UBER%"
-        string Mapped_NACE_Code "Output Category"
-    }
-
-    %% =============================================
-    %% 3. CALCULATION LIBRARIES (PROC-05, 06, 07)
-    %% =============================================
-    Ref_Emission_Factor_Library {
-        string Factor_ID PK "EEIO or LCA"
-        string NACE_Code
-        decimal CO2e_Factor
-        string Unit_Denominator "USD or KG"
-    }
-
-    Ref_Supplier_PCF_Data {
-        int PCF_ID PK
+    %% =================================================
+    %% 1. MASTER DATA (Supplier & Location)
+    %% =================================================
+    Procurement_Supplier_Master {
+        int Supplier_ID PK
         string Supplier_Name
-        decimal CO2e_Per_Unit
+        string Tax_ID
+        string Default_NACE_Code "Default Activity"
     }
 
-    %% =============================================
-    %% 4. THE SCOPE 3 LEDGER (DAT-02)
-    %% =============================================
-    Sustainability_Scope_3_Ledger {
-        bigint Ledger_ID PK
-        string NACE_Code
-        string Calc_Method "SPEND / ACTIVITY / PCF"
-        decimal Total_CO2e_kg
+    dbo_Address_Master {
+        int Address_ID PK
+        string Addr_1
+        string City
+        string Country
     }
 
-    %% =============================================
-    %% RELATIONSHIPS (Workflow Logic)
-    %% =============================================
+    %% Junction to link Supplier to Address
+    dbo_Address_Addressee {
+        int Link_ID PK
+        int Address_ID FK
+        string Addressee_Object_Key "Supplier ID"
+        string Type "SUPPLIER"
+    }
 
-    %% Ingest Process
-    Staging_Ingest_Batch ||..o{ Staging_Procurement_Row_Raw : "contains"
+    %% =================================================
+    %% 2. TRANSACTIONAL DATA (The Document Chain)
+    %% =================================================
+    Procurement_Document {
+        bigint Doc_ID PK
+        string Doc_Type "PO, INVOICE, RECEIPT"
+        string Doc_Reference "Vendor Invoice #"
+        date Doc_Date
+        decimal Total_Amount
+        int Supplier_ID FK
+    }
+
+    %% The "Good or Service" Supplied
+    Procurement_Line {
+        bigint Line_ID PK
+        bigint Doc_ID FK
+        string Description "e.g. 100 Laptops, Consulting"
+        decimal Quantity
+        string Unit "Each, Hours, Liters"
+        decimal Line_Amount
+        
+        %% THE CRITICAL ACTIVITY LINK
+        string Activity_NACE_Code "The Business Activity"
+    }
+
+    %% =================================================
+    %% 3. KNOWLEDGE & REPORTING (Finance & Activity)
+    %% =================================================
     
-    %% ML Classification (PROC-03)
-    Staging_Procurement_Row_Raw }|..|| ML_Config_Vendor_Map_Rules : "mapped by"
+    %% The Definition of the Activity (Business Knowledge)
+    Ref_NACE_Code_Master {
+        string NACE_Code PK
+        string Description "e.g. Computer Programming"
+        boolean Is_Green "Taxonomy Eligible"
+    }
 
-    %% Calculation Engines (PROC-04 Router Logic)
-    %% If Spend Data -> Use Emission Factor (EEIO)
-    Sustainability_Scope_3_Ledger }|..|| Ref_Emission_Factor_Library : "uses factor (PROC-05/06)"
+    %% The Financial Result (GL Reporting)
+    Finance_General_Ledger {
+        bigint Journal_ID PK
+        bigint Source_Line_ID "Link -> Proc Line"
+        string Account_Code "GL Account"
+        decimal Amount_Debit
+        date Posting_Date
+    }
+
+    %% =================================================
+    %% RELATIONSHIPS
+    %% =================================================
+
+    %% 1. Location Logic
+    Procurement_Supplier_Master ||--o{ dbo_Address_Addressee : "is located at"
+    dbo_Address_Master ||--o{ dbo_Address_Addressee : "provides address for"
+
+    %% 2. Purchasing Logic
+    Procurement_Supplier_Master ||--o{ Procurement_Document : "issues"
+    Procurement_Document ||--o{ Procurement_Line : "contains items"
+
+    %% 3. Business Activity Knowledge
+    %% The NACE Code defines what the goods/services actually represent
+    Ref_NACE_Code_Master ||..o{ Procurement_Line : "defines activity of"
     
-    %% If Primary Data -> Use PCF
-    Sustainability_Scope_3_Ledger }|..|| Ref_Supplier_PCF_Data : "uses primary data (PROC-07)"
+    %% 4. Financial Reporting Integration
+    %% The GL Entry is derived directly from the Line Item
+    Procurement_Line ||..|| Finance_General_Ledger : "generates financial impact"
 
-    %% Final Consolidation (PROC-08)
-    Staging_Procurement_Row_Raw ||..o| Sustainability_Scope_3_Ledger : "transforms into"
 ```
 
 ---
