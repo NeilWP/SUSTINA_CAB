@@ -13,7 +13,7 @@ erDiagram
  %% =======================================================
     %% 1. THE CORE OBJECT (The Single Source)
     %% =======================================================
-    Entity_CorporateEntity {
+    CorporateEntity_Internal_Classification {
         int CorporateEntityId PK
         uniqueidentifier CorporateEntityGuid "Global ID"
         int ParentEntityId FK "Hierarchy Link"
