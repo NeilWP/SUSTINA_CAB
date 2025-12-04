@@ -1,11 +1,13 @@
 
-# Data Entity Specification: Z-01 Entity
+# Data Entity Specification: Z-01 CorporateEntity
 
 | **Document ID** | **Version** | **Status** | **Owner (Author)** | **Approved By** |**Approved On** |
 | :--- | :--- | :--- | :--- | :--- |:--- |
 | Z-01 | 1.0.0 | **DRAFT** | Business Architect | Product Officer | | 
 
 ## 1. Description & Scope
+The schematic below illustartes the structure and the relationships the  CorporateEntty data object enjoys.  
+See the dedictaed pages for the objects related to the CorporateEntity object
 
 ```mermaid
 erDiagram
@@ -34,6 +36,60 @@ erDiagram
     %% RELATIONSHIP: Recursive Hierarchy (Parent/Child)
     %% The 'o{' end indicates that a single Parent (||) can have zero or more (o{) Children.
     Entity_CorporateEntity ||--o{ Entity_CorporateEntity : "has children (Hierarchy)"
+
+
+
+    %% =======================================================
+    %% 1. THE CORE OBJECT (The Single Source)
+    %% =======================================================
+    Entity_CorporateEntity {
+        int CorporateEntityId PK
+        uniqueidentifier CorporateEntityGuid "Global ID"
+        int ParentEntityId FK "Hierarchy Link"
+        nvarchar EntityName
+        string EntityType "Soft Link -> Legal_Status"
+    }
+
+    %% =======================================================
+    %% 2. NEW CLASSIFICATION STRUCTURES
+    %% =======================================================
+    Ref_Legal_Status_Master {
+        string Status_Code PK "PLC, LTD, SP, CASH"
+        string Description
+    }
+
+    Entity_Internal_Classification {
+        int Classification_ID PK
+        int CorporateEntityId FK
+        string Classification_Type "DIVISION, OFFICE"
+        string Classification_Value
+    }
+
+    Ref_Business_Object_Type {
+        string Object_Type_Code PK "The Master Role Dictionary"
+    }
+    
+    Procurement_Supplier_Master {
+        int Supplier_ID PK
+        uniqueidentifier Linked_Entity_Guid "Link to CorporateEntityGuid"
+        string Supplier_Name
+    }
+
+    %% =======================================================
+    %% RELATIONSHIPS (LOGICAL SOFT LINKS)
+    %% =======================================================
+
+    %% A. Internal Hierarchy & Segmentation
+    Entity_CorporateEntity ||--o{ Entity_CorporateEntity : "has children (Hierarchy)"
+    Entity_CorporateEntity ||--o{ Entity_Internal_Classification : "is segmented by"
+
+    %% B. External Identity & Legal Status
+    Ref_Legal_Status_Master ||--o{ Entity_CorporateEntity : "defines legal status"
+    Ref_Business_Object_Type ||--o{ Entity_CorporateEntity : "is classified as"
+
+    %% C. Role Overlap (Supplier/Client)
+    %% An entity becomes a supplier when linked in this table
+    Entity_CorporateEntity ||..o| Procurement_Supplier_Master : "is supplier (if linked)"
 ```
 
 ## Core Details
