@@ -71,6 +71,84 @@ flowchart LR
 ```
 ---
 
+## Entity Relationship diagram for Procurement
+```mermaid
+erDiagram
+    %% =============================================
+    %% 1. INGEST LAYER (PROC-01)
+    %% =============================================
+    Staging_Ingest_Batch {
+        bigint Batch_ID PK
+        string Filename
+        string Status
+    }
+
+    Staging_Procurement_Row_Raw {
+        bigint Row_ID PK
+        bigint Batch_ID "Link -> Batch"
+        string Raw_Supplier_Name
+        string Raw_Spend_Amount
+        string Validation_Status "UNMAPPED/READY"
+    }
+
+    %% =============================================
+    %% 2. MAPPING LOGIC (PROC-03)
+    %% =============================================
+    ML_Config_Vendor_Map_Rules {
+        int Rule_ID PK
+        string Keyword_Pattern "e.g. %UBER%"
+        string Mapped_NACE_Code "Output Category"
+    }
+
+    %% =============================================
+    %% 3. CALCULATION LIBRARIES (PROC-05, 06, 07)
+    %% =============================================
+    Ref_Emission_Factor_Library {
+        string Factor_ID PK "EEIO or LCA"
+        string NACE_Code
+        decimal CO2e_Factor
+        string Unit_Denominator "USD or KG"
+    }
+
+    Ref_Supplier_PCF_Data {
+        int PCF_ID PK
+        string Supplier_Name
+        decimal CO2e_Per_Unit
+    }
+
+    %% =============================================
+    %% 4. THE SCOPE 3 LEDGER (DAT-02)
+    %% =============================================
+    Sustainability_Scope_3_Ledger {
+        bigint Ledger_ID PK
+        string NACE_Code
+        string Calc_Method "SPEND / ACTIVITY / PCF"
+        decimal Total_CO2e_kg
+    }
+
+    %% =============================================
+    %% RELATIONSHIPS (Workflow Logic)
+    %% =============================================
+
+    %% Ingest Process
+    Staging_Ingest_Batch ||..o{ Staging_Procurement_Row_Raw : "contains"
+    
+    %% ML Classification (PROC-03)
+    Staging_Procurement_Row_Raw }|..|| ML_Config_Vendor_Map_Rules : "mapped by"
+
+    %% Calculation Engines (PROC-04 Router Logic)
+    %% If Spend Data -> Use Emission Factor (EEIO)
+    Sustainability_Scope_3_Ledger }|..|| Ref_Emission_Factor_Library : "uses factor (PROC-05/06)"
+    
+    %% If Primary Data -> Use PCF
+    Sustainability_Scope_3_Ledger }|..|| Ref_Supplier_PCF_Data : "uses primary data (PROC-07)"
+
+    %% Final Consolidation (PROC-08)
+    Staging_Procurement_Row_Raw ||..o| Sustainability_Scope_3_Ledger : "transforms into"
+```
+
+---
+
 ## 3. Component Dictionary (Traceability Matrix)
 
 The following components are subject to **ISO 9001 Quality Assurance** and **ISO 27001 Security** testing.
