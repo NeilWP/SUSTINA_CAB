@@ -40,9 +40,19 @@ erDiagram
         string Default_AP_Account_Code "Link -> CoA (Liability)"
     }
 
-    Z-09_Finance_Chart_of_Accounts {
-        string Account_Code PK "e.g. Accounts Payable"
-        string Account_Name
+    Z-09_01_Finance_Chart_of_Accounts {
+        string Account_Code PK
+        nvarchar Account_Name
+        nvarchar Account_Type
+        nvarchar Account_SubType
+        string Parent_Account_Code FK
+        bit Is_Posting_Account
+        bit Is_Active
+        nvarchar Reporting_Line_Code
+        nvarchar IFRS_Line_Code
+        nvarchar Local_GAAP_Line_Code
+        uniqueidentifier CreatedBySiteUserGuid
+        datetime2 CreatedAtUtc
     }
     
     Z-11_Ref_NACE_Code_Master {
@@ -54,11 +64,14 @@ erDiagram
     %% ==========================================
     %% 3. REPORTING LEDGERS
     %% ==========================================
-    Z-01_Finance_General_Ledger {
+    Z-09_02_Finance_General_Ledger {
         bigint Journal_ID PK
         string Account_Code FK
-        bigint Source_Line_ID "Link -> Proc Line"
+        datetime2 PostingDate
         decimal Amount
+        nvarchar CurrencyCode
+        nvarchar Source_System
+        bigint Source_Line_ID
     }
     
     Z-12_Sustainability_Activity_Ledger {
@@ -78,10 +91,10 @@ erDiagram
     
     %% B. Financial Reporting Links
     %% B1: Supplier sets the default AP account
-    Z-04_Procurement_Supplier_Master ||..o{ Z-09_Finance_Chart_of_Accounts : "uses default AP code"
+    Z-04_Procurement_Supplier_Master ||..o{ Z-09_01_Finance_Chart_of_Accounts : "uses default AP code"
 
     %% B2: The Line posts to the GL
-    Z-04_02_Procurement_Line ||..|| Z-01_Finance_General_Ledger : "posts financial impact"
+    Z-04_02_Procurement_Line ||..|| Z-09_02_Finance_General_Ledger : "posts financial impact"
     
     %% C. Activity Reporting (The ESG Connection)
     %% C1: The NACE Master classifies the Line Item
