@@ -1,12 +1,12 @@
 
-# Data Entity Specification: Z-03 Entity_Internal_Classification
+# Data Entity Specification: Z-03 CorporateEntity_Internal_Classification
 
 | **Document ID** | **Version** | **Status** | **Owner (Author)** | **Approved By** |**Approved On** |
 | :--- | :--- | :--- | :--- | :--- |:--- |
 | Z-03 | 1.0.0 | **DRAFT** | Business Architect | Product Officer | | 
 
 ## 1. Description & Scope
-The schematic below illustrates the structure the Entity_Internal_Classification data object enjoys.  
+The schematic below illustrates the structure the CorporateEntity_Internal_Classification data object enjoys.  
 
 ```mermaid
 erDiagram
@@ -23,7 +23,7 @@ erDiagram
 ```
 
 ## Core Details
-The **[Entity].[Internal_Classification]** table is a **segmentation layer** designed to break down a single legal entity into multiple reporting or functional units (e.g., divisions, departments, offices). It is built to capture the flexible, internal reporting view required by management.
+The **[Entity].[CorporateEntity_Internal_Classification]** table is a **segmentation layer** designed to break down a single legal entity into multiple reporting or functional units (e.g., divisions, departments, offices). It is built to capture the flexible, internal reporting view required by management.
 
 **Key Characteristics and Data Fields**
 The table structure focuses on creating flexible, many-to-many-like links between the legal entity and its reporting segments.
