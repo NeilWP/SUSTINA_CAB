@@ -14,7 +14,7 @@ erDiagram
     %% =======================================================
     %% THE CORE BUSINESS OBJECT
     %% =======================================================
-    Entity_CorporateEntity {
+    CorporateEntity {
         int CorporateEntityId PK
         uniqueidentifier CorporateEntityGuid "Unique Key"
         int ParentEntityId FK
