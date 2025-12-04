@@ -10,10 +10,10 @@ The schematic below illustrates the structure the CorporateEntity_Internal_Class
 
 ```mermaid
 erDiagram
- %% =======================================================
+    %% =======================================================
     %% 1. THE CORE OBJECT (The Single Source)
     %% =======================================================
-    CorporateEntity_Internal_Classification {
+    Z-03_CorporateEntity_Internal_Classification {
         int Classification_ID PK
         int CorporateEntityId FK
         string Classification_Type "DIVISION, OFFICE"

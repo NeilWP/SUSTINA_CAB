@@ -11,7 +11,7 @@ erDiagram
     %% =======================================================
     %% 1. THE MAIN ENTITY (The Object Being Audited)
     %% =======================================================
-    Entity_CorporateEntity {
+    Z-01_CorporateEntity {
         int CorporateEntityId PK
         uniqueidentifier CorporateEntityGuid
         string EntityName
@@ -20,7 +20,7 @@ erDiagram
     %% =======================================================
     %% 2. THE HISTORY LOG (The Audit Trail)
     %% =======================================================
-    Entity_CorporateEntity_History {
+    Z-02_CorporateEntity_History {
         bigint HistoryId PK
         int CorporateEntityId FK
         nvarchar ChangeType
@@ -32,7 +32,7 @@ erDiagram
     }
 
     %% RELATIONSHIP: One Entity has many History Records (Logical Link)
-    Entity_CorporateEntity ||--o{ Entity_CorporateEntity_History : "is audited by"
+    Z-01_CorporateEntity ||--o{ Z-02_CorporateEntity_History : "is audited by"
 ```
 
 ## Corporate Entity History Structure

@@ -14,7 +14,7 @@ erDiagram
     %% =======================================================
     %% THE CORE BUSINESS OBJECT
     %% =======================================================
-    CorporateEntity {
+    Z-01_CorporateEntity {
         int CorporateEntityId PK
         uniqueidentifier CorporateEntityGuid "Unique Key"
         int ParentEntityId FK
@@ -34,15 +34,14 @@ erDiagram
     }
 
     %% RELATIONSHIP: Recursive Hierarchy (Parent/Child)
-    %% The 'o{' end indicates that a single Parent (||) can have zero or more (o{) Children.
-    CorporateEntity ||--o{ CorporateEntity : "has children (Hierarchy)"
+    Z-01_CorporateEntity ||--o{ Z-01_CorporateEntity : "has children (Hierarchy)"
 
 
 
     %% =======================================================
     %% 1. THE CORE OBJECT (The Single Source)
     %% =======================================================
-    CorporateEntity {
+    Z-01_CorporateEntity {
         int CorporateEntityId PK
         uniqueidentifier CorporateEntityGuid "Global ID"
         int ParentEntityId FK "Hierarchy Link"
@@ -53,23 +52,23 @@ erDiagram
     %% =======================================================
     %% 2. NEW CLASSIFICATION STRUCTURES
     %% =======================================================
-    Ref_Legal_Status_Master {
+    Z-05_Ref_Legal_Status_Master {
         string Status_Code PK "PLC, LTD, SP, CASH"
         string Description
     }
 
-    CorporateEntity_Internal_Classification {
+    Z-03_CorporateEntity_Internal_Classification {
         int Classification_ID PK
         int CorporateEntityId FK
         string Classification_Type "DIVISION, OFFICE"
         string Classification_Value
     }
 
-    Ref_Business_Object_Type {
+    Z-06_Ref_Business_Object_Type {
         string Object_Type_Code PK "The Master Role Dictionary"
     }
     
-    Procurement_Supplier_Master {
+    Z-04_Procurement_Supplier_Master {
         int Supplier_ID PK
         uniqueidentifier Linked_Entity_Guid "Link to CorporateEntityGuid"
         string Supplier_Name
@@ -80,16 +79,16 @@ erDiagram
     %% =======================================================
 
     %% A. Internal Hierarchy & Segmentation
-    CorporateEntity ||--o{ CorporateEntity : "has children (Hierarchy)"
-    CorporateEntity ||--o{ CorporateEntity_Internal_Classification : "is segmented by"
+    Z-01_CorporateEntity ||--o{ Z-01_CorporateEntity : "has children (Hierarchy)"
+    Z-01_CorporateEntity ||--o{ Z-03_CorporateEntity_Internal_Classification : "is segmented by"
 
     %% B. External Identity & Legal Status
-    Ref_Legal_Status_Master ||--o{ CorporateEntity : "defines legal status"
-    Ref_Business_Object_Type ||--o{ CorporateEntity : "is classified as"
+    Z-05_Ref_Legal_Status_Master ||--o{ Z-01_CorporateEntity : "defines legal status"
+    Z-06_Ref_Business_Object_Type ||--o{ Z-01_CorporateEntity : "is classified as"
 
     %% C. Role Overlap (Supplier/Client)
     %% An entity becomes a supplier when linked in this table
-    CorporateEntity ||..o| Procurement_Supplier_Master : "is supplier (if linked)"
+    Z-01_CorporateEntity ||..o| Z-04_Procurement_Supplier_Master : "is supplier (if linked)"
 ```
 
 ## Core Details
