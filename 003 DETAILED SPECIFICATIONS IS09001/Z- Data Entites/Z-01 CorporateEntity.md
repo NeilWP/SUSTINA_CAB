@@ -61,6 +61,14 @@ The table embeds necessary operational and compliance data directly onto the rec
 | **Tax Snapshot** | TaxAuthorityName, TaxReference | Serves as a quick **snapshot of the primary tax obligation** for the entity. |
 | **Control Flags** | IsActive, IsPartOfStructure | Binary flags used for **enabling/disabling** the entity or determining inclusion in **hierarchical roll-ups and reports**. |
 
+
+## 3.Data Management
+| Obejct Type | Name | Description |
+| :--- | :--- | :--- |
+| **Stored Procedure** | usp_CreateCorporateEntity | Creating Coprorate entities in the dtabase suppotring the application |
+| **Stored Procedure** | usp_UpdateEntityStructure | Managing the flow of data into the audit table, [Entity].[CorporateEntity_History] |
+
+
 ## Architectural Role  
 This table is the source of truth for the "Who" in the application:
 Every subsequent action, transaction, or compliance requirement (Tax Assignment, GL Entry, Scope 3 Report) will link back to a specific CorporateEntityGuid.
