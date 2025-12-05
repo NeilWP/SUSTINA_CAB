@@ -1,131 +1,196 @@
-
 # Data Entity Specification: Z-01 CorporateEntity
 
-| **Document ID** | **Version** | **Status** | **Owner (Author)** | **Approved By** |**Approved On** |
-| :--- | :--- | :--- | :--- | :--- |:--- |
-| Z-01 | 1.0.0 | **DRAFT** | Business Architect | Product Officer | | 
+| **Document ID** | **Version** | **Status** | **Owner (Author)** | **Approved By** | **Approved On** |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| Z-01 | 2.0.0 | **DRAFT** | Business Architect | Product Officer |  |
 
 ## 1. Description & Scope
-The schematic below illustartes the structure and the relationships the  CorporateEntty data object enjoys.  
-See the dedictaed pages for the objects related to the CorporateEntity object
+The **Z-01 CorporateEntity** object defines the master structure used to represent any legal entity, subsidiary, branch, business unit, or organisational unit in the system.
+
+It establishes:
+
+- The **global unique identity** of each corporate entity  
+- The **hierarchical parent-child structure** (group consolidation tree)  
+- The **linkages to address, contact, supplier, classification, and legal status reference data**  
+- The **audit trail** supporting ISO, regulatory, and financial compliance  
+
+CorporateEntity is a **core object** consumed by multiple domains (Tax, Finance, ESG, Procurement, Supply Chain, etc.).
+
+---
+
+## 2. Referential Integrity Standard
+
+> **Referential Integrity Standard**  
+> Relationships involving CorporateEntity are **logical only** — application and reporting layers enforce correctness.  
+> No physical FOREIGN KEY constraints are created at database level.
+
+The physical implementation of the master entity is:
+
+- **Table**: `[Entity].[CorporateEntity]`
+
+CorporateEntity logically references:
+
+- **Z-02.01 Address_Master** (Registered / Operational Address)
+- **Z-02.02 Contact_Master** (Primary Contact)
+- **Z-03 CorporateEntity_Internal_Classification**
+- **Z-05 Legal_Status_Master**
+- **Z-06 Business_Object_Type**
+- **Z-04 Procurement_Supplier_Master**
+
+---
+
+## 3. Entity–Relationship Diagram (Updated)
 
 ```mermaid
 erDiagram
-    %% =======================================================
-    %% THE CORE BUSINESS OBJECT
-    %% =======================================================
+
+    %% =======================================
+    %% CORPORATE ENTITY CORE
+    %% =======================================
     Z-01_CorporateEntity {
         int CorporateEntityId PK
-        uniqueidentifier CorporateEntityGuid "Unique Key"
-        int ParentEntityId FK
+        uniqueidentifier CorporateEntityGuid
+        int ParentEntityId
         nvarchar EntityName
-        nvarchar EntityType
-        nvarchar PrimeContactNumber
-        nvarchar AddressLine1 "Embedded Address"
-        nvarchar City
-        nvarchar Region
-        char CountryCode
-        nvarchar TaxAuthorityName "Snapshot Name"
+        string EntityTypeCode
+        int RegisteredAddressId
+        int PrimaryContactId
+        nvarchar TaxAuthorityName
         nvarchar TaxReference
         bit IsPartOfStructure
         bit IsActive
-        uniqueidentifier CreatedBySiteUserGuid "Audit Trail"
+        uniqueidentifier CreatedBySiteUserGuid
         datetime2 CreatedAtUtc
+        datetime2 ModifiedAtUtc
     }
 
-    %% RELATIONSHIP: Recursive Hierarchy (Parent/Child)
-    Z-01_CorporateEntity ||--o{ Z-01_CorporateEntity : "has children (Hierarchy)"
-
-
-
-    %% =======================================================
-    %% 1. THE CORE OBJECT (The Single Source)
-    %% =======================================================
-    Z-01_CorporateEntity {
-        int CorporateEntityId PK
-        uniqueidentifier CorporateEntityGuid "Global ID"
-        int ParentEntityId FK "Hierarchy Link"
-        nvarchar EntityName
-        string EntityType "Soft Link -> Legal_Status"
+    %% =======================================
+    %% DIRECTLY CONNECTED Z-02 ENTITIES
+    %% =======================================
+    Z-02_01_Address_Master {
+        int AddressId PK
+        string Address_Line1
+        string Address_Town
+        string Postal_Code
+        string Country_ISO2
     }
 
-    %% =======================================================
-    %% 2. NEW CLASSIFICATION STRUCTURES
-    %% =======================================================
-    Z-05_Ref_Legal_Status_Master {
-        string Status_Code PK "PLC, LTD, SP, CASH"
-        string Description
+    Z-02_02_Contact_Master {
+        int ContactId PK
+        string Contact_Name
+        string Contact_Type_Code
     }
 
+    %% =======================================
+    %% DIRECT CLASSIFICATION / ROLE LINKS
+    %% =======================================
     Z-03_CorporateEntity_Internal_Classification {
         int Classification_ID PK
-        int CorporateEntityId FK
-        string Classification_Type "DIVISION, OFFICE"
+        int CorporateEntityId
+        string Classification_Type
         string Classification_Value
     }
 
-    Z-06_Ref_Business_Object_Type {
-        string Object_Type_Code PK "The Master Role Dictionary"
-    }
-    
     Z-04_Procurement_Supplier_Master {
         int Supplier_ID PK
-        uniqueidentifier Linked_Entity_Guid "Link to CorporateEntityGuid"
-        string Supplier_Name
+        uniqueidentifier Linked_Entity_Guid
     }
 
-    %% =======================================================
-    %% RELATIONSHIPS (LOGICAL SOFT LINKS)
-    %% =======================================================
+    Z-05_Ref_Legal_Status_Master {
+        string Status_Code PK
+        string Description
+    }
 
-    %% A. Internal Hierarchy & Segmentation
-    Z-01_CorporateEntity ||--o{ Z-01_CorporateEntity : "has children (Hierarchy)"
-    Z-01_CorporateEntity ||--o{ Z-03_CorporateEntity_Internal_Classification : "is segmented by"
+    Z-06_Ref_Business_Object_Type {
+        string Object_Type_Code PK
+        string Description
+    }
 
-    %% B. External Identity & Legal Status
-    Z-05_Ref_Legal_Status_Master ||--o{ Z-01_CorporateEntity : "defines legal status"
-    Z-06_Ref_Business_Object_Type ||--o{ Z-01_CorporateEntity : "is classified as"
+    %% =======================================
+    %% RELATIONSHIPS (LOGICAL ONLY)
+    %% =======================================
 
-    %% C. Role Overlap (Supplier/Client)
-    %% An entity becomes a supplier when linked in this table
-    Z-01_CorporateEntity ||..o| Z-04_Procurement_Supplier_Master : "is supplier (if linked)"
+    %% CorporateEntity hierarchy
+    Z-01_CorporateEntity ||--o{ Z-01_CorporateEntity : "ParentEntityId"
+
+    %% CorporateEntity → Address (Registered)
+    Z-02_01_Address_Master ||--o{ Z-01_CorporateEntity : "RegisteredAddressId"
+
+    %% CorporateEntity → Contact (Primary)
+    Z-02_02_Contact_Master ||--o{ Z-01_CorporateEntity : "PrimaryContactId"
+
+    %% CorporateEntity → Internal Classification
+    Z-01_CorporateEntity ||--o{ Z-03_CorporateEntity_Internal_Classification : "Classification"
+
+    %% CorporateEntity → Legal Status
+    Z-05_Ref_Legal_Status_Master ||--o{ Z-01_CorporateEntity : "EntityTypeCode (Legal Status)"
+
+    %% CorporateEntity → Business Object Type
+    Z-06_Ref_Business_Object_Type ||--o{ Z-01_CorporateEntity : "EntityTypeCode"
+
+    %% CorporateEntity → Supplier Role
+    Z-01_CorporateEntity ||..o| Z-04_Procurement_Supplier_Master : "Is Supplier (via CorporateEntityGuid)"
+
 ```
 
-## Core Details
-The **[Entity].[CorporateEntity]** table is the foundational master data object for the entire organizational structure module. It is designed to capture the legal and physical identity of every company or organizational unit that exists within your system.
+---
 
-**Key Characteristics and Data Fields**
-The table structure indicates a design focused on auditability, global identity, and structural relationships.
+## 4. Table Definition
 
-## 1 Identity and Structure Management
-This table enables the primary function of the application: modeling the corporate group.
-| Feature | Attribute / Column | Primary Function |
-| :--- | :--- | :--- |
-| Dual Primary Key | CorporateEntityId | A standard auto-incrementing integer (INT IDENTITY) used internally for simple database lookups and relationships. |
-| Global Identifier | CorporateEntityGuid | A unique identifier (UNIQUEIDENTIFIER) used for external integration, APIs, and as the standard soft link across schemas (e.g., linking to the General Ledger or Tax Assignment tables). |
-| Hierarchy Link | ParentEntityId | The ParentEntityId column allows the table to link to itself, creating the Parent/Child organizational tree. This defines the consolidation structure (e.g., which subsidiaries roll up to which parent). |
+### **Physical table name**: `[Entity].[CorporateEntity]`
 
-Audit Trail: It maintains mandatory audit fields (CreatedBySiteUserGuid, CreatedAtUtc, etc.) to enforce user accountability for initial setup and subsequent changes.
+| Column | Type | Null | Notes |
+|--------|------|------|-------|
+| `CorporateEntityId` | INT IDENTITY | NOT NULL | Internal primary key |
+| `CorporateEntityGuid` | UNIQUEIDENTIFIER | NOT NULL | Global GUID used for cross-domain linking |
+| `ParentEntityId` | INT | NULL | Logical FK → Z‑01 CorporateEntity self‑hierarchy |
+| `EntityName` | NVARCHAR(250) | NOT NULL | Legal or operating name |
+| `EntityTypeCode` | NVARCHAR(50) | NOT NULL | Logical FK → Z‑06 Business Object Type |
+| `RegisteredAddressId` | INT | NULL | Logical FK → Z‑02.01 Address_Master |
+| `PrimaryContactId` | INT | NULL | Logical FK → Z‑02.02 Contact_Master |
+| `TaxAuthorityName` | NVARCHAR(250) | NULL | Snapshot reference |
+| `TaxReference` | NVARCHAR(100) | NULL | Tax identifier |
+| `IsPartOfStructure` | BIT | NOT NULL DEFAULT 1 | Used in roll‑ups, reporting |
+| `IsActive` | BIT | NOT NULL DEFAULT 1 | Soft delete flag |
+| `CreatedBySiteUserGuid` | UNIQUEIDENTIFIER | NOT NULL | Audit identity |
+| `CreatedAtUtc` | DATETIME2(3) | NOT NULL | Creation timestamp |
+| `ModifiedAtUtc` | DATETIME2(3) | NULL | Update timestamp |
 
-## 2 Core Operational & Compliance Data
-The table embeds necessary operational and compliance data directly onto the record:
-| Feature | Attributes / Columns | Purpose |
-| :--- | :--- | :--- |
-| **Identification** | EntityName, PrimeContactNumber | Stores the **legal name** and primary contact information. |
-| **Embedded Location** | AddressLine1, City, PostalCode, CountryCode | Represents the **Registered or Primary Headquarters Address** (fields are part of the core table structure). |
-| **Tax Snapshot** | TaxAuthorityName, TaxReference | Serves as a quick **snapshot of the primary tax obligation** for the entity. |
-| **Control Flags** | IsActive, IsPartOfStructure | Binary flags used for **enabling/disabling** the entity or determining inclusion in **hierarchical roll-ups and reports**. |
+---
 
+## 5. Data Management
 
-## 3.Data Management
-| Obejct Type | Name | Description |
-| :--- | :--- | :--- |
-| **Stored Procedure** | usp_CreateCorporateEntity | Creating Coprorate entities in the dtabase suppotring the application |
-| **Stored Procedure** | usp_UpdateEntityStructure | Managing the flow of data into the audit table, [Entity].[CorporateEntity_History] |
+| Object Type | Name | Description |
+|-------------|------|-------------|
+| **Stored Procedure** | **usp_Z_01_CorporateEntity_Create** | Creates a new CorporateEntity record, validates `ParentEntityId`, `RegisteredAddressId` (Z-02.01), `PrimaryContactId` (Z-02.02), sets audit fields and default flags. |
+| **Stored Procedure** | **usp_Z_01_CorporateEntity_Update** | Updates core identity, hierarchy, and reference pointers (address, contact, legal status, object type) while maintaining audit integrity. |
+| **Stored Procedure** | **usp_Z_01_CorporateEntity_Get** | Retrieves a specific CorporateEntity by `CorporateEntityId` or `CorporateEntityGuid` for use by application services and integrations. |
+| **View** | **vw_Z_01_CorporateEntity_AllActive** | Returns all active CorporateEntity records (`IsActive = 1`, `IsPartOfStructure` as required) for UI lists, reporting, and downstream consumers. |
+| **History Table** | **[Entity].[CorporateEntity_History]** | Stores snapshots of key structural, legal, and classification attributes when materially changed, supporting audit and timeline analysis. |
+| **Stored Procedure** | **usp_Z_01_CorporateEntity_WriteHistory** | Writes the current state of a CorporateEntity into `[Entity].[CorporateEntity_History]` when hierarchy, legal status, or other governed attributes are updated. |
+| **Governance Process** | **Corporate Entity Stewardship Workflow** | Formal process controlling creation, modification, and deactivation of CorporateEntities, including approval for hierarchy changes and legal status updates. |
+| **DQ Process** | **DQ_CorporateEntity_ValidationReport** | Data-quality checks to detect orphaned parent links, invalid or missing `RegisteredAddressId` / `PrimaryContactId`, inconsistent legal status or object type codes, and inactive entities still referenced by downstream records. |
 
+---
 
-## Architectural Role  
-This table is the source of truth for the "Who" in the application:
-Every subsequent action, transaction, or compliance requirement (Tax Assignment, GL Entry, Scope 3 Report) will link back to a specific CorporateEntityGuid.
-Its primary function is to define the boundaries of financial consolidation and compliance obligations within the group.
+## 6. Business Rules & Behaviour
+
+- A CorporateEntity **must** have a globally unique `CorporateEntityGuid`.  
+- The parent-child structure forms a **tree**, no circular references allowed.  
+- `RegisteredAddressId` and `PrimaryContactId` must point to active Z‑02 records if populated.  
+- Legal Status and Business Object Type must match allowed Z‑05 and Z‑06 values.  
+- Entities marked `IsActive = 0` remain in history and reporting but cannot be assigned new downstream records.  
+
+---
+
+## 7. Architectural Role  
+CorporateEntity is the **root identity object** for the entire organisation.  
+All compliance, finance, supply chain, and ESG objects link back to a CorporateEntityGuid.
+
+It defines:
+
+- The consolidation boundaries  
+- The reporting structure  
+- The legal and operational identity of each organisational unit  
+
 ---
