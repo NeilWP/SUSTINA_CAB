@@ -2,11 +2,11 @@
 Albert   
 
 The Datamodel is almost ready - time to get reviewing it together.
-I would suggest that we get a bit of a factory going - where  when the need to explain a  
+I would suggest that we get a bit of a factory going - where when the need to explain a  
 * CHANGE or  
 * an ERROR remediation 
-is identified  we add a new table in the specific page to   explain what the issue / change is setting the status to open  OPEN 
-Keeo it on the main branch - we don;t need to make this  one  open to lots of changesand merges .
+is identified  we add a new table in the specific page to explain what the issue / change is setting the status to open  OPEN 
+Keeo it on the main branch - we don't need to make this one open to lots of changesand merges .
 
 I have a script which trawls thruigh the dcatalogue and creaets the underlying data base objects 
 
