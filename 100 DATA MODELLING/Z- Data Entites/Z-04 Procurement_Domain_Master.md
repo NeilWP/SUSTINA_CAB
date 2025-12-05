@@ -1,132 +1,152 @@
+# Data Entity Specification: Z-04 Procurement Domain Overview  
+**Version:** 1.2.0  
+**Status:** DRAFT  
 
-# Data Entity Specification: Z-04 Procurement Overview
+---
 
-| **Document ID** | **Version** | **Status** | **Owner (Author)** | **Approved By** |**Approved On** |
-| :--- | :--- | :--- | :--- | :--- |:--- |
-| Z-04 | 1.0.0 | **DRAFT** | Business Architect | Product Officer | | 
+## 1. Description & Scope  
+The **Procurement Domain (Z‑04)** governs supplier onboarding, classification, communication identity, and financial integration.
 
-## 1. Description & Scope
-The schematic below illustartes the structure and the relationships the  data objects involved in the Procurement workflow enjoy.  
-See the dedictaed pages for the objects related to the CorporateEntity object
+A Supplier is represented by:  
+- A **CorporateEntity (Z‑01)** classified as `ROLE = SUPPLIER`, and  
+- A **Supplier Master record (Z‑04.01)** containing procurement‑specific attributes.
+
+Support structures include Address & Contacts (Z‑02) and Finance (Z‑09).  
+This version **excludes ESG mapping** (Option B).
+
+---
+
+## 2. Referential Integrity Standard  
+> All relationships in Z‑04 are **logical only**.  
+> No physical FOREIGN KEY constraints exist.  
+> Validations occur via application services and data quality reporting.
+
+---
+
+## 3. Entities in This Domain  
+- **Z‑04.01 Procurement_Supplier_Master** – core supplier identity  
+- **Z‑04.02 Supplier_Activity_Map** – NACE activity classifications  
+- **Z‑Ref NACE_Activity_Master** – authorised industry activity codes  
+- **Z‑01 CorporateEntity** – legal identity of supplier  
+- **Z‑03 CorporateEntity_Internal_Classification** – flags CorporateEntities as SUPPLIER  
+- **Z‑02 Address & Contact Master** – supplier communication identity  
+- **Z‑09 Finance Entities** – posting defaults and buying‑entity linkage
+
+---
+
+## 4. One‑Tier ERD (Procurement Domain)
 
 ```mermaid
 erDiagram
-    %% ==========================================
-    %% 1. CORE TRANSACTIONAL DATA
-    %% ==========================================
-    Z-04_03_Procurement_Document {
-        bigint Doc_ID PK
-        string Doc_Type "PO, INVOICE, EXPENSE"
-        int Supplier_ID FK
-        decimal Total_Amount
-    }
 
-    Z-04_02_Procurement_Line {
-        bigint Line_ID PK
-        bigint Doc_ID FK
-        string Description
-        decimal Line_Amount
-        
-        %% THE ACTIVITY BRIDGE
-        string Activity_NACE_Code "Source of ESG Classification"
-    }
-
-    %% ==========================================
-    %% 2. FINANCIAL & ACTIVITY STANDARDS
-    %% ==========================================
-    Z-04_Procurement_Supplier_Master {
-        int Supplier_ID PK
+    %% ============================
+    %% SUPPLIER CORE
+    %% ============================
+    Z-04_01_Procurement_Supplier_Master {
+        int Supplier_Id PK
+        string Supplier_Code
         string Supplier_Name
-        string Default_AP_Account_Code "Link -> CoA (Liability)"
+        uuid Linked_Entity_Guid
+        int RegisteredAddressId
+        int PrimaryContactId
+        string Default_Accounting_Entity_Code
+        string Default_AP_Account_Code
+    }
+
+    %% ============================
+    %% SUPPLIER AS CORPORATE ENTITY
+    %% ============================
+    Z-01_CorporateEntity {
+        int CorporateEntityId PK
+        uuid CorporateEntityGuid
+        string EntityName
+    }
+
+    Z-03_CorporateEntity_Internal_Classification {
+        int Classification_ID PK
+        int CorporateEntityId
+        string Classification_Type
+        string Classification_Value
+    }
+
+    %% ============================
+    %% ADDRESS & CONTACT STRUCTURES
+    %% ============================
+    Z-02_01_Address_Master {
+        int AddressId PK
+    }
+
+    Z-02_02_Contact_Master {
+        int ContactId PK
+    }
+
+    %% ============================
+    %% ACTIVITY MAP / NACE
+    %% ============================
+    Z-04_02_Supplier_Activity_Map {
+        int Map_ID PK
+        int Supplier_Id
+        string NACE_Code
+        bit Is_Primary_Activity
+    }
+
+    Z-Ref_NACE_Activity_Master {
+        string NACE_Code PK
+        string NACE_Description
+    }
+
+    %% ============================
+    %% FINANCE LINKAGES
+    %% ============================
+    Z-09_00_Accounting_Entity_Master {
+        string Accounting_Entity_Code PK
+        int CorporateEntityId
     }
 
     Z-09_01_Finance_Chart_of_Accounts {
         string Account_Code PK
-        nvarchar Account_Name
-        nvarchar Account_Type
-        nvarchar Account_SubType
-        string Parent_Account_Code FK
-        bit Is_Posting_Account
-        bit Is_Active
-        nvarchar Reporting_Line_Code
-        nvarchar IFRS_Line_Code
-        nvarchar Local_GAAP_Line_Code
-        uniqueidentifier CreatedBySiteUserGuid
-        datetime2 CreatedAtUtc
-    }
-    
-    Z-11_Ref_NACE_Code_Master {
-        string NACE_Code PK
-        string Description
-        boolean Is_Taxonomy_Eligible
+        string CoA_Code
     }
 
-    %% ==========================================
-    %% 3. REPORTING LEDGERS
-    %% ==========================================
-    Z-09_02_Finance_General_Ledger {
-        bigint Journal_ID PK
-        string Account_Code FK
-        datetime2 PostingDate
-        decimal Amount
-        nvarchar CurrencyCode
-        nvarchar Source_System
-        bigint Source_Line_ID
-    }
-    
-    Z-12_Sustainability_Activity_Ledger {
-        bigint Activity_ID PK
-        bigint GL_Journal_ID FK
-        string NACE_Code FK
-        decimal Total_CO2e_kg
-    }
+    %% ============================
+    %% RELATIONSHIPS (LOGICAL ONLY)
+    %% ============================
 
-    %% ==========================================
-    %% RELATIONSHIPS (The Traceability Chain)
-    %% ==========================================
+    Z-01_CorporateEntity ||..o{ Z-04_01_Procurement_Supplier_Master : "Linked_Entity_Guid"
+    Z-01_CorporateEntity ||--o{ Z-03_CorporateEntity_Internal_Classification : "ROLE = SUPPLIER"
 
-    %% A. Supplier & Document Flow
-    Z-04_Procurement_Supplier_Master ||--o{ Z-04_03_Procurement_Document : "issues"
-    Z-04_03_Procurement_Document ||--o{ Z-04_02_Procurement_Line : "contains items"
-    
-    %% B. Financial Reporting Links
-    %% B1: Supplier sets the default AP account
-    Z-04_Procurement_Supplier_Master ||..o{ Z-09_01_Finance_Chart_of_Accounts : "uses default AP code"
+    Z-02_01_Address_Master ||--o{ Z-04_01_Procurement_Supplier_Master : "RegisteredAddressId"
+    Z-02_02_Contact_Master ||--o{ Z-04_01_Procurement_Supplier_Master : "PrimaryContactId"
 
-    %% B2: The Line posts to the GL
-    Z-04_02_Procurement_Line ||..|| Z-09_02_Finance_General_Ledger : "posts financial impact"
-    
-    %% C. Activity Reporting (The ESG Connection)
-    %% C1: The NACE Master classifies the Line Item
-    Z-11_Ref_NACE_Code_Master ||..o{ Z-04_02_Procurement_Line : "classifies spend activity"
+    Z-04_01_Procurement_Supplier_Master ||--o{ Z-04_02_Supplier_Activity_Map : "Supplier_Id"
+    Z-Ref_NACE_Activity_Master ||--o{ Z-04_02_Supplier_Activity_Map : "NACE_Code"
 
-    %% C2: The GL feeds the ESG Ledger
-    Z-01_Finance_General_Ledger ||..o{ Z-12_Sustainability_Activity_Ledger : "source of spend data"
-
-     Z-01_CorporateEntity {
-        int CorporateEntityId PK
-        uniqueidentifier CorporateEntityGuid "Unique Key"
-        int ParentEntityId FK
-        nvarchar EntityName
-        nvarchar EntityType
-        nvarchar PrimeContactNumber
-        nvarchar AddressLine1 "Embedded Address"
-        nvarchar City
-        nvarchar Region
-        char CountryCode
-        nvarchar TaxAuthorityName "Snapshot Name"
-        nvarchar TaxReference
-        bit IsPartOfStructure
-        bit IsActive
-        uniqueidentifier CreatedBySiteUserGuid "Audit Trail"
-        datetime2 CreatedAtUtc
-    }
-   %% C. Role Overlap (Supplier/Client)
-    %% An entity becomes a supplier when linked in this table
-    Z-01_CorporateEntity ||..o| Z-04_Procurement_Supplier_Master : "is supplier (if linked)"
+    Z-09_00_Accounting_Entity_Master ||--o{ Z-04_01_Procurement_Supplier_Master : "Default_Accounting_Entity_Code"
+    Z-09_01_Finance_Chart_of_Accounts ||..o{ Z-04_01_Procurement_Supplier_Master : "Default_AP_Account_Code"
 ```
-## Core Details
-The **[Procurement].[Supplier\_Master]** table is the foundational master data object for all **external and internal vendors** that transact with your corporate entities. Its primary role is to centralize vendor identity while enabling granular **ESG activity mapping** and **Internal/External boundary classification**.
 
+---
+
+## 5. Data Flow Summary  
+**Supplier legal identity → Supplier Master → Finance integration → Activity classification**
+
+---
+
+## 6. Data Management  
+| Object Type | Name | Description |
+|------------|------|-------------|
+| Stored Procedure | usp_Z_04_01_Supplier_Create | Creates a Supplier; validates CorporateEntity + required references |
+| Stored Procedure | usp_Z_04_01_Supplier_Update | Updates identity, finance links, lifecycle |
+| Stored Procedure | usp_Z_04_02_Activity_Add | Adds NACE activity |
+| Stored Procedure | usp_Z_04_02_Activity_Remove | Removes NACE activity |
+| View | vw_Z_04_01_Supplier_AllActive | All active suppliers |
+| View | vw_Z_04_02_Supplier_Activity | Supplier → NACE mapping |
+| Governance | Supplier_Stewardship_Workflow | Controls onboarding and validation |
+| DQ Process | DQ_Supplier_ValidationReport | Validates CorporateEntity, Address, Contact, CoA, NACE |
+
+---
+
+## 7. Architectural Role  
+Z‑04 is the bridge between **CorporateEntity identity**, **communication identity**, and **financial identity**, ensuring all supplier data is standardised for AP, procurement analytics, and compliance workflows.
 
 ---
