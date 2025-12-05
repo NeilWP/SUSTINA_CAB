@@ -1,0 +1,171 @@
+# Cross-Domain Architecture Overview (Z-01, Z-02, Z-04, Z-09, NACE)
+
+| **Document ID** | **Version** | **Status** | **Owner (Author)** | **Approved By** |
+|-----------------|-------------|------------|---------------------|------------------|
+| X-01 | 1.1.0 | **DRAFT** | Business Architect | Product Officer |
+
+This document explains how key master-data domains interconnect:
+
+- **Z-01 CorporateEntity** – legal and structural identity  
+- **Z-01.03 CorporateEntity_Internal_Classification** – internal roles (SUPPLIER, CUSTOMER, GROUP, etc.)  
+- **Z-01.05 CorporateEntity_Industry_Map** – legal industry (NACE) mapping  
+- **Z-02 Address & Contacts** – communication identity  
+- **Z-04 Procurement** – supplier identity and procurement activity classification  
+- **Z-09 Finance** – internal buying entities and financial structures  
+
+---
+
+## 1. High-Level Purpose
+
+| Domain | Purpose |
+|--------|---------|
+| **Z-01 CorporateEntity** | Master legal/structural identity for internal and external organisations. |
+| **Z-02 Address & Contacts** | Shared pool of addresses, contacts, and channels used across domains. |
+| **Z-04 Procurement** | Supplier master data and procurement activity (what we buy). |
+| **Z-09 Finance** | Accounting entities, charts of accounts, and ledgers (who buys and how we post). |
+| **NACE Reference** | Legal/regulatory industry codes reused for entity and supplier classification. |
+
+---
+
+## 2. Cross-Domain ERD (One-Tier View)
+
+```mermaid
+erDiagram
+
+    %% ========================
+    %% CORPORATE ENTITY FAMILY
+    %% ========================
+    Z-01_CorporateEntity {
+        int CorporateEntityId PK
+        uuid CorporateEntityGuid
+        string EntityName
+    }
+
+    Z-03_CorporateEntity_Internal_Classification {
+        int Classification_ID PK
+        int CorporateEntityId
+        string Classification_Type
+        string Classification_Value
+    }
+
+    Z-01_05_CorporateEntity_Industry_Map {
+        int Entity_Industry_Id PK
+        int CorporateEntityId
+        string NACE_Code
+        bool Is_Primary_Activity
+    }
+
+    %% ========================
+    %% NACE REFERENCE
+    %% ========================
+    Z-Ref_NACE_Activity_Master {
+        string NACE_Code PK
+        string NACE_Description
+    }
+
+    %% ========================
+    %% ADDRESS & CONTACTS
+    %% ========================
+    Z-02_01_Address_Master {
+        int AddressId PK
+    }
+
+    Z-02_02_Contact_Master {
+        int ContactId PK
+    }
+
+    %% ========================
+    %% PROCUREMENT SUPPLIER
+    %% ========================
+    Z-04_01_Procurement_Supplier_Master {
+        int Supplier_Id PK
+        uuid Linked_Entity_Guid
+        int RegisteredAddressId
+        int PrimaryContactId
+        string Default_Accounting_Entity_Code
+    }
+
+    Z-04_02_Supplier_Activity_Map {
+        int Map_ID PK
+        int Supplier_Id
+        string NACE_Code
+        bool Is_Primary_Activity
+    }
+
+    %% ========================
+    %% FINANCE BUYING ENTITIES
+    %% ========================
+    Z-09_00_Accounting_Entity_Master {
+        string Accounting_Entity_Code PK
+        int CorporateEntityId
+    }
+
+    %% ========================
+    %% RELATIONSHIPS (LOGICAL)
+    %% ========================
+
+    %% CorporateEntity → internal classification
+    Z-01_CorporateEntity ||--o{ Z-03_CorporateEntity_Internal_Classification : "roles (e.g. SUPPLIER)"
+
+    %% CorporateEntity → industry (legal NACE)
+    Z-01_CorporateEntity ||--o{ Z-01_05_CorporateEntity_Industry_Map : "legal NACE codes"
+    Z-Ref_NACE_Activity_Master ||--o{ Z-01_05_CorporateEntity_Industry_Map : "valid NACE codes"
+
+    %% CorporateEntity ↔ Supplier Master (supplier identity)
+    Z-01_CorporateEntity ||..o{ Z-04_01_Procurement_Supplier_Master : "Linked_Entity_Guid (supplier identity)"
+
+    %% Supplier → Address & Contact
+    Z-02_01_Address_Master ||--o{ Z-04_01_Procurement_Supplier_Master : "RegisteredAddressId"
+    Z-02_02_Contact_Master ||--o{ Z-04_01_Procurement_Supplier_Master : "PrimaryContactId"
+
+    %% Supplier → Procurement Activity NACE
+    Z-04_01_Procurement_Supplier_Master ||--o{ Z-04_02_Supplier_Activity_Map : "procured activities"
+    Z-Ref_NACE_Activity_Master ||--o{ Z-04_02_Supplier_Activity_Map : "valid NACE codes"
+
+    %% Accounting Entity → CorporateEntity: internal buying entity
+    Z-01_CorporateEntity ||--o{ Z-09_00_Accounting_Entity_Master : "internal buying entity"
+
+    %% Supplier → Accounting Entity: default buyer
+    Z-09_00_Accounting_Entity_Master ||--o{ Z-04_01_Procurement_Supplier_Master : "Default_Accounting_Entity_Code"
+```
+
+---
+
+## 3. Dual NACE Model
+
+This architecture deliberately separates **legal NACE classification** from **procurement activity NACE classification**:
+
+- **Legal NACE (Z‑01.05)** – describes the **industry of the CorporateEntity as a whole** (how the entity is registered and operates from a regulatory perspective).  
+- **Procurement NACE (Z‑04.02)** – describes the **nature of the goods/services the organisation buys from that supplier**.
+
+Both sets of rows refer to the same **NACE reference table** but have different business meanings:
+
+| Layer | Entity | Meaning |
+|-------|--------|---------|
+| Legal | Z‑01.05 CorporateEntity_Industry_Map | In which industries does this legal entity operate? |
+| Procurement | Z‑04.02 Supplier_Activity_Map | In which industries are we transacting with this supplier? |
+
+This is a common requirement where a single company can operate in many sectors but the purchasing relationship focuses on a subset of its activities.
+
+---
+
+## 4. Governance Rules
+
+- Every supplier in **Z-04** must map to a **CorporateEntity** in **Z-01** classified with a suitable role (e.g. `SUPPLIER`).  
+- Legal NACE classification is governed centrally by the **CorporateEntity stewardship** process (Z‑01 and Z‑01.05).  
+- Procurement activity NACE classification is governed by **Procurement stewardship** (Z‑04.02).  
+- Both must use the same **reference NACE table** to avoid divergence and code drift.  
+- Accounting entities in **Z-09.00** must map to real CorporateEntities (Z‑01) to ensure financial and legal views remain aligned.
+
+---
+
+## 5. Architectural Role
+
+This cross-domain view ensures that:
+
+- Legal identity (Z‑01), communication identity (Z‑02), supplier identity (Z‑04), and financial identity (Z‑09) are all consistent and traceable.  
+- NACE codes are **one step away** from CorporateEntity and Supplier, but in a controlled, reusable reference structure.  
+- ISO9001, regulatory, audit, and ESG teams can understand **who** an entity is, **how** it is classified legally, and **what** it does commercially in procurement relationships.
+
+---
+
