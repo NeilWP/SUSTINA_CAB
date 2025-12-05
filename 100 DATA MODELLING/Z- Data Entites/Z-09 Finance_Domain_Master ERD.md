@@ -1,138 +1,208 @@
-# Data Entity Specification: Z-09 Finance Domain Master
+# Data Entity Specification: Z-09 Finance Domain Overview
 
 | **Document ID** | **Version** | **Status** | **Owner (Author)** | **Approved By** | **Approved On** |
-| :--- | :--- | :--- | :--- | :--- | :--- |
+|-----------------|-------------|------------|---------------------|------------------|------------------|
 | **Z-09** | 1.0.0 | **DRAFT** | Business Architect | Product Officer | |
-
-## 1. Description & Scope
-
-This document provides a **domain-level overview** of the **Z-09 Finance Family**, showing how the core finance entities relate to each other:
-
-- **Z-09.01** – Finance Chart of Accounts  
-- **Z-09.02** – Finance General Ledger  
-- **Z-09.03** – Finance Trial Balance  
-- **Z-09.04** – Finance Exchange Rates  
-- **Z-09.05** – Finance Cost Centre Master  
-
-Each individual entity has its own detailed specification (Z-09.01–Z-09.05).  
-This master focuses on the **high-level relationships** between them.
 
 ---
 
-## 2. Finance Domain Master ERD
+## 1. Description & Scope
+
+The **Z‑09 Finance Domain** defines the core financial structures required to support:
+
+- Multi‑entity accounting  
+- Multi‑chart-of-accounts operation  
+- General ledger postings  
+- Period‑level financial summaries (Trial Balance)  
+- Budgets and reforecasts  
+- FX valuation and base‑currency conversions  
+- Integration into ESG actuals and forecasts (Z‑10 domain)
+
+The domain is structured around **logical-only referential integrity**.  
+No physical foreign keys are enforced; instead, **application and reporting layers** ensure correctness.
+
+The Z‑09 domain contains:
+
+- **Z‑09.00 Accounting_Entity_Master**  
+- **Z‑09.01 Finance_Chart_of_Accounts**  
+- **Z‑09.02 Finance_General_Ledger**  
+- **Z‑09.03 Finance_Trial_Balance**  
+- **Z‑09.04 Finance_Exchange_Rates**  
+- **Z‑09.05 Finance_Cost_Centre_Master**  
+- **Z‑09.06 Finance_Budget_Ledger**
+
+Each entity has a dedicated specification page.
+
+---
+
+## 2. Referential Integrity Standard
+
+> **Referential Integrity Standard**  
+> All Z‑09 relationships are **logical only**.  
+> The application layer validates Accounting Entity → CoA, CoA → Account, Cost Centre, and FX relationships.  
+> No physical FOREIGN KEY constraints are created.
+
+This supports:
+
+- Multi‑tenant or multi‑entity environments  
+- Flexible onboarding of new accounting structures  
+- Historical ledger preservation without schema churn  
+- Clean separation between **structural definitions** and **transactional operations**
+
+---
+
+## 3. Domain ERD (One‑Tier Overview)
 
 ```mermaid
 erDiagram
-    %% =====================================================
-    %% MASTER DATA ENTITIES
-    %% =====================================================
+
+    %% ======================================
+    %% 1. FINANCE DOMAIN ENTITIES
+    %% ======================================
+
+    Z-09_00_Accounting_Entity_Master {
+        string Accounting_Entity_Code PK
+        string Accounting_Entity_Name
+        string CoA_Code
+    }
+
     Z-09_01_Finance_Chart_of_Accounts {
+        string CoA_Code
         string Account_Code PK
-        nvarchar Account_Name
+        string Account_Name
+        string Account_Type
     }
 
-    Z-09_05_Finance_Cost_Centre_Master {
-        string Cost_Centre_Code PK
-        nvarchar Cost_Centre_Name
-    }
-
-    %% =====================================================
-    %% TRANSACTIONAL / SUMMARY ENTITIES
-    %% =====================================================
     Z-09_02_Finance_General_Ledger {
         bigint Journal_ID PK
-        string Account_Code FK
-        string Cost_Centre_Code FK
+        string Accounting_Entity_Code
+        string Account_Code
+        string Cost_Centre_Code
         datetime2 PostingDate
+        decimal Amount
         decimal Amount_Base
     }
 
     Z-09_03_Finance_Trial_Balance {
-        string Period_Code PK
-        string Account_Code PK
-        string Cost_Centre_Code PK
+        string Period_Code
+        string Accounting_Entity_Code
+        string Account_Code
+        string Cost_Centre_Code
+        decimal Opening_Balance
         decimal Closing_Balance
     }
 
     Z-09_04_Finance_Exchange_Rates {
-        string FromCurrency PK
-        string ToCurrency PK
+        string CurrencyCode PK
         datetime2 RateDate PK
         decimal RateValue
     }
 
-    %% =====================================================
-    %% RELATIONSHIPS WITHIN THE FINANCE DOMAIN
-    %% =====================================================
+    Z-09_05_Finance_Cost_Centre_Master {
+        string Cost_Centre_Code PK
+        string Cost_Centre_Name
+    }
 
-    %% Master Data to GL
-    Z-09_01_Finance_Chart_of_Accounts ||--o{ Z-09_02_Finance_General_Ledger : "account used on postings"
-    Z-09_05_Finance_Cost_Centre_Master ||--o{ Z-09_02_Finance_General_Ledger : "cost centre allocation"
+    Z-09_06_Finance_Budget_Ledger {
+        string Budget_Version
+        string Accounting_Entity_Code
+        string Account_Code
+        string Cost_Centre_Code
+        decimal Budget_Amount
+        decimal Budget_Amount_Base
+    }
 
-    %% GL to Trial Balance
-    Z-09_02_Finance_General_Ledger ||--o{ Z-09_03_Finance_Trial_Balance : "aggregated into TB"
+    %% ======================================
+    %% 2. RELATIONSHIPS (LOGICAL ONLY)
+    %% ======================================
 
-    %% Master Data to Trial Balance
-    Z-09_01_Finance_Chart_of_Accounts ||--o{ Z-09_03_Finance_Trial_Balance : "summarised by account"
-    Z-09_05_Finance_Cost_Centre_Master ||--o{ Z-09_03_Finance_Trial_Balance : "summarised by cost centre"
+    Z-09_00_Accounting_Entity_Master ||--o{ Z-09_02_Finance_General_Ledger : "Accounting_Entity_Code"
+    Z-09_00_Accounting_Entity_Master ||--o{ Z-09_03_Finance_Trial_Balance : "Accounting_Entity_Code"
+    Z-09_00_Accounting_Entity_Master ||--o{ Z-09_06_Finance_Budget_Ledger : "Accounting_Entity_Code"
 
-    %% FX to GL (conversion)
-    Z-09_04_Finance_Exchange_Rates ||..o{ Z-09_02_Finance_General_Ledger : "FX conversion for base amount"
+    Z-09_01_Finance_Chart_of_Accounts ||--o{ Z-09_02_Finance_General_Ledger : "Account_Code"
+    Z-09_01_Finance_Chart_of_Accounts ||--o{ Z-09_03_Finance_Trial_Balance : "Account_Code"
+    Z-09_01_Finance_Chart_of_Accounts ||--o{ Z-09_06_Finance_Budget_Ledger : "Account_Code"
+
+    Z-09_05_Finance_Cost_Centre_Master ||--o{ Z-09_02_Finance_General_Ledger : "Cost_Centre_Code"
+    Z-09_05_Finance_Cost_Centre_Master ||--o{ Z-09_03_Finance_Trial_Balance : "Cost_Centre_Code"
+    Z-09_05_Finance_Cost_Centre_Master ||--o{ Z-09_06_Finance_Budget_Ledger : "Cost_Centre_Code"
+
+    Z-09_04_Finance_Exchange_Rates ||..o{ Z-09_02_Finance_General_Ledger : "FX conversion → Amount_Base"
+    Z-09_04_Finance_Exchange_Rates ||..o{ Z-09_06_Finance_Budget_Ledger : "FX conversion → Budget_Amount_Base"
 ```
 
 ---
 
-## 3. Entity Roles in the Domain
+## 4. Domain Behaviour Summary
 
-| Entity ID | Name | Role in Domain |
-| :--- | :--- | :--- |
-| **Z-09.01** | Finance Chart of Accounts | Defines the financial account structure (master data). |
-| **Z-09.02** | Finance General Ledger | Core transactional ledger; posts all financial events. |
-| **Z-09.03** | Finance Trial Balance | Period-level summary by account and cost centre. |
-| **Z-09.04** | Finance Exchange Rates | Provides FX conversion rates for base currency calculations. |
-| **Z-09.05** | Finance Cost Centre Master | Defines management accounting / responsibility centres. |
+### 4.1 Structural Entities
+- **Z‑09.00 Accounting_Entity_Master**  
+  Defines “who” the financial data belongs to and which CoA they use.
 
----
+- **Z‑09.01 Finance_Chart_of_Accounts**  
+  Defines “what” each financial posting represents.
 
-## 4. Flow of Data
+- **Z‑09.05 Finance_Cost_Centre_Master**  
+  Defines “where” in the organisational structure the posting belongs.
 
-1. **Chart of Accounts (Z-09.01)** and **Cost Centres (Z-09.05)** define valid structural codes.  
-2. **General Ledger (Z-09.02)** records postings, referencing:
-   - `Account_Code` from Z-09.01  
-   - `Cost_Centre_Code` from Z-09.05  
-   - `Amount_Base` derived using Z-09.04 FX rates (when needed).  
-3. **Trial Balance (Z-09.03)** aggregates Z-09.02 postings by:
-   - Period  
-   - Account  
-   - Cost Centre  
+### 4.2 Transactional Entities
+- **Z‑09.02 Finance_General_Ledger**  
+  The atomic journal-level ledger of all financial movements.
 
-This creates a clear, auditable path from **master data → transactions → summaries**.
+- **Z‑09.03 Finance_Trial_Balance**  
+  The per-period aggregate summarising GL activity.
 
----
+### 4.3 Analytic & Support Entities
+- **Z‑09.04 Finance_Exchange_Rates**  
+  Provides FX rates used to calculate base-currency equivalents.
 
-## 5. Relationship Summary
-
-| From | To | Relationship |
-| :--- | :--- | :--- |
-| Z-09.01 CoA | Z-09.02 GL | GL postings must reference a valid account. |
-| Z-09.05 Cost Centres | Z-09.02 GL | GL postings may/must reference a valid cost centre. |
-| Z-09.02 GL | Z-09.03 TB | TB aggregates GL by period, account, and cost centre. |
-| Z-09.01 CoA | Z-09.03 TB | TB lines are grouped by chart of account. |
-| Z-09.05 Cost Centres | Z-09.03 TB | TB lines are grouped by cost centre. |
-| Z-09.04 FX | Z-09.02 GL | FX rates convert transaction amounts to base currency. |
+- **Z‑09.06 Finance_Budget_Ledger**  
+  Stores plan/forecast financial numbers aligned with entity, account, and cost-centre structures.
 
 ---
 
-## 6. Design Principles
+## 5. Data Management Standards
 
-- **Single Source of Truth per Concept**  
-  - Accounts, Cost Centres, Exchange Rates, GL, and TB are all separated into their own governed entities.
+| Object Type | Naming Prefix | Example | Description |
+|-------------|---------------|---------|-------------|
+| **Stored Procedures** | `usp_Z_09_xx_` | `usp_Z_09_02_GL_PostJournal` | Always start with domain + entity number. |
+| **Views** | `vw_Z_09_xx_` | `vw_Z_09_03_TB_For_FinancialStatements` | Used for reporting and UI consumption. |
+| **DQ Processes** | `DQ_Finance_*` | `DQ_Finance_GL_ValidationReport` | Standardised data-quality controls. |
+| **Governance Workflows** | `{Entity}_Workflow` | `ChartOfAccounts_Stewardship_Workflow` | Supports ISO9001 audit traceability. |
 
-- **One-Tier ERD per Entity**  
-  - Each Z-09.0n spec shows only its direct relationships, to avoid diagram noise and duplication.
+---
 
-- **Clear Upstream and Downstream Flow**  
-  - Master Data → Transactions → Summaries  
-  - FX influences GL but does not alter master data.
+## 6. Architectural Role
+
+The Z‑09 domain serves as the **financial backbone** of the platform.  
+It supports:
+
+- **Statutory reporting**  
+- **Management reporting**  
+- **Audit & compliance**  
+- **ESG Actuals & Forecasts (Z‑10)**  
+- **Cross-entity consolidated financial views**
+
+Its design ensures:
+
+- Strong separation of master data vs transactional data  
+- Full audit traceability  
+- Multi‑entity, multi‑CoA capability  
+- Forward compatibility with ESG, procurement, risk, and operational modules  
+
+---
+
+## 7. Related Specifications
+
+For full details, refer to:
+
+- **Z‑09.00 Accounting_Entity_Master**  
+- **Z‑09.01 Finance_Chart_of_Accounts**  
+- **Z‑09.02 Finance_General_Ledger**  
+- **Z‑09.03 Finance_Trial_Balance**  
+- **Z‑09.04 Finance_Exchange_Rates**  
+- **Z‑09.05 Finance_Cost_Centre_Master**  
+- **Z‑09.06 Finance_Budget_Ledger**
 
 ---
