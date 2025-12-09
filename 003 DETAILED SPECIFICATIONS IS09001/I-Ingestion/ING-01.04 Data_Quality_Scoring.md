@@ -16,6 +16,79 @@ Each activity receives a **0–100 DataQuality_Score** plus optional flags, prov
 - Support audit, transparency, and ISO-9001 style process evidence  
 
 This specification is **implementation-agnostic** – it defines *which dimensions* are scored and *how they should be combined*, not how any specific code or ETL tool implements them.
+  
+
+## 1.1 Overiew of entities
+
+```mermaid
+erDiagram
+
+    %% =======================================
+    %% CONTEXT ENTITY: NORMALISED ACTIVITY
+    %% =======================================
+    ING_01_Normalised_Activity {
+        uuid Activity_Id PK
+        string Activity_Type
+    }
+
+    %% =======================================
+    %% DATA QUALITY ENTITIES (ING-01.04)
+    %% =======================================
+
+    ING_01_04_DQ_Weighting_Model {
+        int    Weighting_Model_Id PK
+        string Model_Name
+        string Model_Version
+        date   Effective_From
+        date   Effective_To
+        string Description
+    }
+
+    ING_01_04_DQ_Dimension_Master {
+        string Dimension_Code PK
+        string Dimension_Name
+        string Dimension_Description
+    }
+
+    ING_01_04_DQ_Model_Dimension_Weight {
+        int    Weighting_Model_Id
+        string Dimension_Code
+        decimal Weight_Percent
+    }
+
+    ING_01_04_DQ_Tier_Master {
+        string Tier_Code PK
+        int    Min_Score
+        int    Max_Score
+        string Tier_Description
+    }
+
+    ING_01_04_Activity_DQ {
+        uuid   Activity_Id PK
+        int    Weighting_Model_Id
+        int    DataQuality_Score
+        string Tier_Code
+        string DataQuality_Flags
+    }
+
+    %% =======================================
+    %% RELATIONSHIPS
+    %% =======================================
+
+    %% Each activity has DQ metadata
+    ING_01_Normalised_Activity ||--o{ ING_01_04_Activity_DQ : "DQ record (logical)"
+
+    %% Activity DQ uses a specific weighting model
+    ING_01_04_DQ_Weighting_Model  ||--o{ ING_01_04_Activity_DQ : "applied model"
+
+    %% Tier classification for score
+    ING_01_04_DQ_Tier_Master      ||--o{ ING_01_04_Activity_DQ : "Tier_Code"
+
+    %% Weighting model defines weights per dimension
+    ING_01_04_DQ_Weighting_Model  ||--o{ ING_01_04_DQ_Model_Dimension_Weight : "has weights"
+    ING_01_04_DQ_Dimension_Master ||--o{ ING_01_04_DQ_Model_Dimension_Weight : "dimension"
+```
+
 
 ---
 
@@ -127,49 +200,8 @@ Scoring example:
 
 ---
 
-# 5. Weighting Model
 
-A simple default weighting model:
-
-| Dimension | Weight |
-|-----------|--------|
-| Completeness | 25% |
-| Source Reliability | 20% |
-| Unit Accuracy | 15% |
-| Enterprise-Key Mapping | 25% |
-| Anomaly Detection | 15% |
-
-Overall score (0–100) is:
-
-```text
-DataQuality_Score =
-    0.25 * Completeness_Score
-  + 0.20 * SourceReliability_Score
-  + 0.15 * UnitAccuracy_Score
-  + 0.25 * Mapping_Score
-  + 0.15 * Anomaly_Score
-```
-
-Scores are rounded to the nearest integer.
-
----
-
-# 6. Data Quality Tiers
-
-`DataQuality_Tier` provides a coarse classification for easier reporting:
-
-| Tier | Score Range | Interpretation |
-|------|-------------|----------------|
-| A | 85–100 | High quality – safe for production ESG calculations. |
-| B | 70–84 | Good quality – generally usable, minor caveats. |
-| C | 50–69 | Marginal – may be used with caution / scenario analysis only. |
-| D | 0–49 | Low quality – remediation required before use in official reporting. |
-
-Thresholds can be adjusted but must be documented and versioned.
-
----
-
-# 7. DQ Flags
+# 5. DQ Flags
 
 `DataQuality_Flags` captures **why** a record did not reach 100.  
 Examples:
@@ -187,7 +219,7 @@ Flags should be:
 
 ---
 
-# 8. Usage in Downstream Processes
+# 6. Usage in Downstream Processes
 
 - ING-02 may choose to **exclude Tier D** from factor mapping, or treat them as separate what-if scenarios.  
 - ING-03 may apply weighting or filtering based on score per scope and reporting requirement.  
@@ -195,7 +227,7 @@ Flags should be:
 
 ---
 
-# 9. Governance
+# 7. Governance
 
 - Changes to scoring rules or weights must trigger a new version of ING-01.04.  
 - Backfilling scores for historical data must be documented.  
@@ -203,7 +235,7 @@ Flags should be:
 
 ---
 
-# 10. Change History
+# 8. Change History
 
 | Version | Date | Author | Notes |
 |---------|------|--------|-------|

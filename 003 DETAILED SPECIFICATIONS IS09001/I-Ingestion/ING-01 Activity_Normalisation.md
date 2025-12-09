@@ -62,6 +62,84 @@ It represents *any unit of activity that can produce emissions*.
 
 ## 4.1 Conceptual Model
 
+
+```mermaid
+erDiagram
+
+    %% =======================================
+    %% NORMALISED ACTIVITY (ING-01)
+    %% =======================================
+    ING_01_Normalised_Activity {
+        uuid    Activity_Id PK
+        string  Activity_Type
+        decimal Quantity
+        string  Unit
+        date    Start_Date
+        date    End_Date
+        string  Source_Category
+        string  Source_Reference
+
+        int     Supplier_Id
+        string  Supplier_Activity_Code
+        int     Product_Id
+        string  Accounting_Entity_Code
+        string  Account_Code
+        string  Cost_Centre_Code
+        bigint  GL_Journal_Id
+    }
+
+    %% =======================================
+    %% SUPPLIER DOMAIN (Z-04)
+    %% =======================================
+    Z_04_01_Procurement_Supplier_Master {
+        int Supplier_Id PK
+    }
+
+    Z_04_02_Supplier_Activity_Map {
+        string Supplier_Activity_Code PK
+    }
+
+    %% =======================================
+    %% PRODUCT DOMAIN (Z-05)
+    %% =======================================
+    Z_05_XX_Product_Master {
+        int Product_Id PK
+    }
+
+    %% =======================================
+    %% FINANCE DOMAIN (Z-09)
+    %% =======================================
+    Z_09_00_Accounting_Entity_Master {
+        string Accounting_Entity_Code PK
+    }
+
+    Z_09_01_Finance_Chart_of_Accounts {
+        string Account_Code PK
+    }
+
+    Z_09_05_Finance_Cost_Centre_Master {
+        string Cost_Centre_Code PK
+    }
+
+    Z_09_02_Finance_General_Ledger {
+        bigint Journal_ID PK
+    }
+
+    %% =======================================
+    %% ONE-TIER, LOGICAL RELATIONSHIPS ONLY
+    %% =======================================
+    Z_04_01_Procurement_Supplier_Master ||--o{ ING_01_Normalised_Activity : "Supplier_Id (logical)"
+    Z_04_02_Supplier_Activity_Map       ||--o{ ING_01_Normalised_Activity : "Supplier_Activity_Code (logical)"
+
+    Z_05_XX_Product_Master              ||--o{ ING_01_Normalised_Activity : "Product_Id (logical)"
+
+    Z_09_00_Accounting_Entity_Master    ||--o{ ING_01_Normalised_Activity : "Accounting_Entity_Code (logical)"
+    Z_09_01_Finance_Chart_of_Accounts   ||--o{ ING_01_Normalised_Activity : "Account_Code (logical)"
+    Z_09_05_Finance_Cost_Centre_Master  ||--o{ ING_01_Normalised_Activity : "Cost_Centre_Code (logical)"
+    Z_09_02_Finance_General_Ledger      ||--o{ ING_01_Normalised_Activity : "GL_Journal_Id (logical)"
+```
+
+---
 ```
 RAW Data (Tier 1/2/3)
     → ING‑01 Normalisation
@@ -103,91 +181,16 @@ If a mapping is not possible (e.g., API-derived grid intensity), ING‑01 stores
 
 ---
 
-# 5. Activity Categories
 
-ING‑01 supports activity classes relevant to all GHG Protocol scopes.
-
-## 5.1 Energy Activities
-- Electricity (kWh)
-- Gas (kWh or m³)
-- Steam, heating, cooling (if applicable)
-- Location-based vs market-based data attribution
-
-## 5.2 Travel & Transport
-- Flights (distance, cabin class, route)
-- Road travel (vehicle km, fuel type)
-- Rail / public transit
-- Hotel nights
-
-## 5.3 Fleet Activity
-- VIN-linked vehicle attributes
-- Monthly fuel litres / kWh
-- Distance travelled
-
-## 5.4 Supplier Spend (Scope 3)
-From GL + supplier mapping:
-- Purchased goods (3.1)
-- Services (3.1)
-- Transportation (3.4)
-- Capital goods (3.2)
-
-## 5.5 Product- or Process-Based Activities
-- Production output
-- Material usage
-- Waste generation
-- Water use
-
-## 5.6 Manually Uploaded Activities
-Including feasibility-test datasets and spreadsheets uploaded directly.
-
----
-
-# 6. Normalisation Rules
-
-## 6.1 Structural Rules
-- All inbound data is flattened into normalised fields  
-- Nested JSON or XML structures must be decomposed  
-- Units are standardised using the ING‑01 unit catalogue
-
-## 6.2 Unit Harmonisation
-Examples:
-- Wh → kWh  
-- miles → km  
-- USD, EUR → standard financial currency mapping via Z‑09 FX structures  
-- L/100km → km and litres  
-
-## 6.3 Time Handling
-- All activities must have a valid temporal window  
-- Hourly/30-min data is aggregated to daily unless fine granularity is explicitly required  
-- Billing periods are split across months if necessary
-
-## 6.4 Supplier, Product & Account Mapping
-ING‑01 must:
-
-- Match supplier names to **Z‑04.01 Supplier Master**  
-- Attach NACE codes from **Z‑04.02 Supplier Activity Map**  
-- Resolve GL lines to **Z‑09** structures when spend-based  
-- Map product-linked activities to **Z‑05.xx** ESG impact structures  
-
-## 6.5 Data Quality Scoring
-Each activity receives a **0–100 data quality score** based on:
-- Completeness  
-- Reliability of source tier  
-- Accuracy of units  
-- Mapping success to enterprise keys  
-- Presence of anomalies (missing dates, negative quantities, etc.)
-
----
-
-# 7. Output Tables (Logical)
+# 5. Output Tables (Logical)
 
 ING‑01 produces two logical datasets.
 
-## 7.1 Normalised_Activity
+## 5.1 Normalised_Activity
 
 A wide table capturing all harmonised fields and mappings.
 
-## 7.2 Normalised_Activity_Metadata
+## 5.2 Normalised_Activity_Metadata
 
 Stores:
 - Original source file/API reference  
@@ -200,7 +203,7 @@ These datasets form the **input to ING‑02 (Factor Mapping)**.
 
 ---
 
-# 8. Validation Requirements
+# 6. Validation Requirements
 
 ING‑01 must validate:
 
@@ -221,7 +224,7 @@ ING‑01 must validate:
 
 ---
 
-# 9. Governance
+# 7. Governance
 
 - Normalisation rules cannot be changed without version increment  
 - Backfill operations must record lineage  
@@ -230,7 +233,7 @@ ING‑01 must validate:
 
 ---
 
-# 10. Change History
+# 8. Change History
 
 | Version | Date | Author | Notes |
 |---------|------|--------|-------|
