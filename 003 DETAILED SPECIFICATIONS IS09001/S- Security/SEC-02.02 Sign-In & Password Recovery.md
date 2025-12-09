@@ -48,6 +48,36 @@ Passwords must ALWAYS be handled according to **SEC-99.00 Hashing Strategy**.
 
 # 3. Sign-In Workflow
 
+```mermaid
+flowchart TD
+    %% Sign-In Workflow (SEC-02.02)
+
+    U[User] --> R[React UI sign in form]
+
+    %% React collects and sends credentials
+    R --> R_Send[Submit email and password via HTTPS]
+    R_Send --> BFF[BFF App API]
+
+    %% BFF layer
+    BFF --> BFF_Validate[Validate request schema]
+    BFF_Validate -->|Valid| CORE[Core API SEC-02.02 Sign In]
+    BFF_Validate -->|Invalid| R_Error[Return validation error to React]
+
+    %% Core API sign-in logic
+    CORE --> CORE_Lookup[Lookup user by email in SQL]
+    CORE_Lookup --> SQL[(SQL Server)]
+    SQL --> CORE_User[Return user record and Argon2id hash]
+
+    CORE_User --> CORE_Verify[Verify password using SEC-02.99 Hashing]
+    CORE_Verify --> CORE_Status[Check account status verified active not locked]
+
+    CORE_Status -->|OK| CORE_Tokens[Issue tokens and session SEC-03.01]
+    CORE_Status -->|Not OK| CORE_Deny[Return authentication failure]
+
+    %% Return to client
+    CORE_Tokens --> BFF_OK[Return authenticated identity and tokens to BFF]
+    BFF_OK --> R_OK[React receives tokens and signs user in]
+```
 ## 3.1 High-Level Sequence
 
 1. **React UI** collects:
@@ -80,6 +110,39 @@ SEC_02_99_Hashing.Verify(plaintextPassword, storedHash)
 ---
 
 # 4. Password Recovery Workflow
+
+```mermaid
+flowchart TD
+    %% Password Recovery Workflow (SEC-02.02)
+
+    %% --- Reset Initiation ---
+
+    U1[User] --> R_Reset[React password reset form]
+    R_Reset --> R_Reset_Send[Submit email via HTTPS]
+    R_Reset_Send --> BFF1[BFF App API]
+
+    BFF1 --> CORE_Init[Core API SEC-02.02 Reset Init]
+    CORE_Init --> CORE_Token[Generate reset token GUID and expiry]
+    CORE_Token --> SQL_Store[Store reset token and expiry in SQL]
+    CORE_Token --> EMAIL[Send password reset email]
+
+    CORE_Init --> R_Generic[Return generic success to React<br/>no user enumeration]
+
+    %% --- Reset Completion ---
+
+    U2[User clicks reset link and enters new password] --> R_Comp[React new password form]
+    R_Comp --> R_Comp_Send[Submit token and new password via HTTPS]
+    R_Comp_Send --> BFF2[BFF App API]
+
+    BFF2 --> CORE_Comp[Core API SEC-02.02 Reset Complete]
+    CORE_Comp --> CORE_Validate_Token[Validate reset token and expiry]
+    CORE_Validate_Token --> CORE_Hash_New[Hash new password using SEC-02.99 Hashing]
+    CORE_Hash_New --> SQL_Update[Update password hash and invalidate token in SQL]
+    SQL_Update --> CORE_Done[Return reset success to Core]
+    CORE_Done --> R_Done[Show password reset confirmation to user]
+    EMAIL -->U2
+```
+
 
 ## 4.1 Reset Initiation
 

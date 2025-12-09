@@ -37,7 +37,41 @@ This specification applies to:
 ---
 
 # 3. Registration Flow Overview
+```mermaid
+flowchart LR
+    %% Registration Flow Overview (SEC-02.01)
 
+    U[User] --> R[React UI registration form]
+
+    %% React collects data
+    R --> R_Collect[Client side validation]
+    R_Collect --> BFF[BFF App API]
+
+    %% BFF layer
+    BFF --> BFF_Validate[Validate request shape]
+    BFF_Validate -->|Valid| CORE[Core API SEC 02 01 RegisterSiteUser]
+    BFF_Validate -->|Invalid| R_Error[Return validation error to React]
+
+    %% Core API processing
+    CORE --> CORE_EmailCheck[Validate email format and MX records]
+    CORE_EmailCheck --> CORE_NameCheck[Validate username rules and uniqueness]
+    CORE_NameCheck --> CORE_Hash[Hash password using Argon2id]
+    CORE_Hash --> CORE_DB[Call SQL procedure usp RegisterSiteUser]
+    CORE_DB --> CORE_Token[Generate verification token GUID]
+    CORE_Token --> CORE_Email[Trigger welcome email with verification link]
+
+    %% SQL Server
+    CORE_DB --> SQL_Profile[Store identity profile in Auth SiteUser]
+    CORE_DB --> SQL_Pwd[Store password hash in Auth SiteUserPassword]
+
+    %% Email + confirmation
+    CORE_Email --> MAIL[Email service]
+    MAIL --> U_Inbox[User email inbox]
+
+    CORE_Token --> R_Confirm[Show registration confirmation message]
+    R_Confirm --> U[User]
+
+```
 ## 3.1 High-Level Sequence
 
 1. **React UI** collects:

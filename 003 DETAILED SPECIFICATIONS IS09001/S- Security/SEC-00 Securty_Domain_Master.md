@@ -30,6 +30,11 @@ This strategy governs functional areas formally specified under:
 
 ---
 
+## 2.1 Overivew 
+```mermaid
+
+```
+
 # 3. Security Objectives
 
 ### 3.1 Protect User Credentials  
