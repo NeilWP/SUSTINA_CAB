@@ -74,21 +74,20 @@ Validate Channel_Type_Code
 ==============================================================================
 
 **Description — SEC-02.01 (Sign-In Validation)**  
-Validates a sign-in attempt by checking the supplied **Email** and 
-client-side hashed **PasswordHash** against the Auth tables.
+Supports sign-in validation by returning the user record and the stored
+password hash for a given email address.
 
-All credential validation is performed inside this procedure.  
-If the combination is valid, a single row is returned;  
-if not, **no rows** are returned.
+The actual password verification (Argon2id) is performed in the
+application layer, using the stored hash returned by this procedure.
+This avoids comparing two different salted hashes in SQL.
 
 **Parameters**
-| Name           | Type              | Req | Description                            |
-|----------------|-------------------|-----|----------------------------------------|
-| @Email         | NVARCHAR(256)     | YES | Login email.                           |
-| @PasswordHash  | NVARCHAR(512)     | YES | Hashed password received from the app. |
+| Name   | Type          | Req | Description                |
+|--------|---------------|-----|----------------------------|
+| @Email | NVARCHAR(256) | YES | Login email (unique key). |
 
 **Returns**
-A single row only when the credentials are valid, containing:
+At most one row containing:
 
 - SiteUserId
 - SiteUserGuid
@@ -97,14 +96,18 @@ A single row only when the credentials are valid, containing:
 - IsActive
 - CurrentStatus
 - Temp_Guid_Verified
+- PasswordHash (for server-side verification only)
 
-**No password hash is returned by this procedure.**
+> NOTE:
+> - PasswordHash MUST NEVER be forwarded to clients.
+> - This proc is for backend use only.
 
 **Version History**
-| Date       | Version | Author             | Description                                  |
-|------------|---------|--------------------|----------------------------------------------|
-| 2025-12-08 | 1.0.0   | Neil Watcyn-Palmer | Initial creation for SEC-02.01 sign-in flow. |
-============================================================================== 
+| Date       | Version | Author             | Description                               |
+|------------|---------|--------------------|-------------------------------------------|
+| 2025-12-08 | 1.0.0   | Neil Watcyn-Palmer | Initial version (string-compare hash).    |
+| 2025-12-11 | 1.1.0   | Neil Watcyn-Palmer | Return stored hash for Argon2 verification|
+==============================================================================
 */
 ```
 
