@@ -1,155 +1,215 @@
-# Specification: SEC-00 Overarching Security Strategy
+# Security Domain Master: SEC-00
 
 | **Document ID** | **Version** | **Status** | **Owner (Author)** | **Approved By** |
 |-----------------|-------------|------------|---------------------|------------------|
-| SEC-00 | 1.0.0 | **DRAFT** | Business Architect | Product Officer |
+| **SEC-00** | **1.1.1** | **DRAFT** | Business Architect | Product Officer |
 
 ---
 
-# 1. Purpose
-The purpose of this document is to define SUSTINA’s overarching security strategy for user identity management, password handling, credential protection, and authentication operations across all system layers. This strategy establishes the principles, standards, and mandatory controls that govern **registration (SEC-02.01)**, **sign-in and password recovery (SEC-02.02)**, and **password hashing and verification (SEC-02.99)**.
+## 1. Purpose
 
-SUSTINA processes personal user information and must therefore maintain a security model that is **resilient against credential compromise**, **compliant with recognised industry standards**, and **suitable for ISO-9001 audit**.
+This document is the **authoritative master specification** for the Security (SEC) domain within the SUSTINA platform.
 
----
+It defines:
+- The scope and structure of the SEC domain
+- The catalogue of security specifications
+- Mandatory documentation conventions
+- Governance principles that apply across all SEC documents
 
-# 2. Scope
-This strategy applies to all components of the SUSTINA authentication ecosystem:
-
-- **Client Layer** (React-based Web Application)  
-- **Application API / BFF** (SUSTINA.AppApi)  
-- **Core Service Layer** (nrg_Core_API)  
-- **Database Layer** (SQL Server Identity and Password Tables)  
-- **Operational activities** including registration, login, password reset, and credential storage.
-
-This strategy governs functional areas formally specified under:
-
-- **SEC-02.01 Registration**  
-- **SEC-02.02 Sign-In & Password Recovery**  
-- **SEC-99.00 Hashing**  
+SEC specifications define **logical security policy and behaviour only**.  
+They deliberately avoid implementation, transport, storage, or vendor-specific detail.
 
 ---
 
-## 2.1 Overivew 
+## 2. Domain Scope
+
+The SEC domain governs:
+- Cryptographic foundations
+- Identity and authentication
+- Account protection
+- Session and token handling
+- Authorisation and access control
+- Identity lifecycle governance
+- Security events and audit evidence
+
+Out of scope:
+- Application feature design
+- API/interface definitions
+- Data model implementations
+- Infrastructure and cloud services
+
+---
+
+## 3. SEC Specification Catalogue
+
+### 3.1 Cryptographic Foundations
+
+| ID | Title |
+|----|-------|
+| SEC-01.01 | Hashing & Irreversible Transformation |
+| SEC-01.02 | Encryption & Key Management |
+
+<div><sub><strong>Table 1 –</strong> Cryptographic foundations specification catalogue</sub></div>
+
+### 3.2 Identity & Authentication
+
+| ID | Title |
+|----|-------|
+| SEC-02.01 | Registration |
+| SEC-02.02 | Sign-In & Password Recovery |
+| SEC-02.03 | Account Protection |
+| SEC-02.04 | Identity Identifiers & Canonicalisation |
+
+<div><sub><strong>Table 2 –</strong> Identity and authentication specification catalogue</sub></div>
+
+### 3.3 Sessions
+
+| ID | Title |
+|----|-------|
+| SEC-03.01 | Token & Session Handling |
+
+<div><sub><strong>Table 3 –</strong> Session specification catalogue</sub></div>
+
+### 3.4 Authorisation & Access Control
+
+| ID | Title |
+|----|-------|
+| SEC-04.01 | Roles & Permissions Model |
+| SEC-04.02 | Role Lifecycle Management |
+| SEC-04.03 | Role Assignment & Entitlement Management |
+| SEC-04.04 | Access Decision & Enforcement |
+
+<div><sub><strong>Table 4 –</strong> Authorisation and access control specification catalogue</sub></div>
+
+### 3.5 Identity Lifecycle Governance
+
+| ID | Title |
+|----|-------|
+| SEC-05.01 | Joiner–Leaver–Mover Policy |
+
+<div><sub><strong>Table 5 –</strong> Identity lifecycle governance specification catalogue</sub></div>
+
+### 3.6 Security Evidence & Audit
+
+| ID | Title |
+|----|-------|
+| SEC-06.01 | Security Events & Evidence |
+
+<div><sub><strong>Table 6 –</strong> Security evidence and audit specification catalogue</sub></div>
+
+---
+
+## 4. Domain Structure Overview (Logical)
+
 ```mermaid
-
+flowchart LR
+    A["SEC-01.xx
+Cryptographic Foundations"] --> B["SEC-02.xx
+Identity & Authentication"]
+    B --> C["SEC-03.xx
+Tokens & Sessions"]
+    C --> D["SEC-04.xx
+Authorisation"]
+    D --> E["SEC-05.xx
+Identity Lifecycle (JLM)"]
+    A --> F["SEC-06.xx
+Security Events & Evidence"]
+    B --> F
+    C --> F
+    D --> F
+    E --> F
 ```
 
-# 3. Security Objectives
-
-### 3.1 Protect User Credentials  
-Ensure that passwords and other authentication secrets are never stored, transmitted, or logged in plaintext, and that a data breach cannot expose user secrets.
-
-### 3.2 Enforce Industry-Best Practices  
-Adopt OWASP-recommended password hashing (Argon2id), secure transport (TLS 1.2+), and strict separation of duties between application layers.
-
-### 3.3 Maintain Compliance  
-Enable alignment with ISO-9001, OWASP ASVS, NIST SP 800-63B, and GDPR security expectations for identity protection.
-
-### 3.4 Minimise Attack Surface  
-Ensure no single layer of the system can independently compromise credentials or bypass authentication controls.
+<div><sub><strong>Figure 1 –</strong> SEC domain logical layering and evidence cross-cut</sub></div>
 
 ---
 
-# 4. Architectural Principles
+## 5. Specification Dependency View (Logical)
 
-## 4.1 End-to-End Secure Transport  
-All authentication-related communication (React → BFF → Core) is transported exclusively over **HTTPS using TLS 1.2 or higher**.  
-Passwords transmitted from the client are protected by TLS and are never stored or logged at any intermediate layer.
+```mermaid
+flowchart LR
+    H["SEC-01.01
+Hashing"] --> R["SEC-02.xx
+IAM"]
+    EKM["SEC-01.02
+Encryption & Keys"] --> R
+    R --> S["SEC-03.01
+Sessions"]
+    R --> Z["SEC-04.xx
+Authorisation"]
+    Z --> JLM["SEC-05.01
+JLM"]
+    R --> EV["SEC-06.01
+Events & Evidence"]
+    S --> EV
+    Z --> EV
+    JLM --> EV
+```
 
-## 4.2 Plaintext Passwords Are Never Persisted  
-No system layer may persist, echo, or log plaintext passwords.  
-The only acceptable transformations are:
-- Argon2id hashing (SEC-02.99)  
-- In-memory verification using Argon2id  
-
-No reversible encryption is permitted for authentication credentials.
-
-## 4.3 Password Hashing Using Argon2id Only  
-The Core API is the **only** component authorised to perform password hashing.
-
-All password hashing must comply with the following Argon2id configuration:
-
-- Argon2: **Argon2id**, Version 1.3  
-- Memory Cost: **64 MB (65536 KiB)**  
-- Time Cost: **4 iterations**  
-- Parallelism: **1 lane/thread**  
-- Salt: cryptographically secure, minimum 16 bytes  
-- Output: Argon2id full encoded string (salt + parameters + hash)
-
-The encoded string is stored verbatim in the database.
-
-## 4.4 SQL Database Stores Hashes, Not Passwords  
-The database stores only the **Argon2id encoded hash string**, with no possibility of reverse-engineering or extracting the plaintext password.
-
-SQL Server does **not** validate passwords.  
-It returns the stored hash to Core for Argon2id verification.
-
-## 4.5 Single Point of Credential Verification  
-Only **Core (nrg_Core_API)** is authorised to:
-
-- Validate password correctness  
-- Perform Argon2id verification  
-- Approve authentication requests  
-
-SQL is restricted to identity retrieval (via email) and must never attempt password comparison.
-
-## 4.6 Separation of Concerns Across Layers
-
-### Client (React)
-- Collects credentials and transmits securely via HTTPS.
-- Performs no hashing, transformations, or local storage beyond session.
-
-### BFF / App API
-- A pass-through orchestration layer for authentication.
-- Performs validation of structure but **never** handles password logic.
-
-### Core API
-- Authoritative security layer.
-- Performs hashing, verification, and identity operations.
-
-### SQL Layer
-- Stores Argon2id hashes.
-- Maintains user records, email verification tokens, and reset tokens.
+<div><sub><strong>Figure 2 –</strong> High-level dependency relationships between SEC specifications</sub></div>
 
 ---
 
-# 5. Mandatory Controls  
+## 6. Mandatory Documentation Conventions
 
-### 5.1 Password Strength Controls  
-- Minimum length: **12 characters**  
-- Recommended: passphrase approach  
-- Enforced during SEC-02.01 registration  
-- Checked during SEC-02.02 reset
+### 6.1 Logical-Only Rule
+SEC documents:
+- MUST define logical behaviour and policy
+- MUST NOT define REST endpoints, message encodings, database models, infrastructure, or vendors
+- MUST remain implementation-agnostic
 
-### 5.2 Account Status Controls  
-Authentication must fail when:
-- Account not verified  
-- Account locked  
-- Account deactivated  
-- Password reset token expired  
-- Verification token expired  
+### 6.2 Table & Figure Caption Standard
+- Captions MUST appear **after** the table or figure
+- Captions MUST use the following format
 
-Returned messages must not leak internal state.
+**Tables**
+```html
+<div><sub><strong>Table n –</strong> Descriptive title</sub></div>
+```
 
-### 5.3 No Credential Leakage  
-- No logs may include passwords or hashes  
-- No monitoring tool or tracing system may capture request bodies containing credentials  
-- No debug builds may bypass Argon2id hashing  
+**Figures**
+```html
+<div><sub><strong>Figure n –</strong> Descriptive title</sub></div>
+```
 
-### 5.4 Privacy and GDPR  
-- Verification tokens and reset tokens must be random GUIDs  
-- Tokens must expire within defined intervals  
-- User data changes must be audited  
-- Credential deletion must follow retention policy  
+### 6.3 Mermaid Diagram Rules
+- All node labels MUST be quoted
+- No HTML tags inside Mermaid nodes
+- Line breaks allowed using literal newlines inside quoted labels
+- Diagrams must represent logical flow only
+
+### 6.4 Deterministic Outcomes
+All SEC-defined operations must:
+- Produce deterministic success/failure outcomes
+- Be auditable
+- Support ISO-9001 evidence requirements
 
 ---
 
-# 6. Compliance With Standards  
+## 7. Governance & Change Control
 
-| Standard | Alignment |
-|---------|-----------|
-| **OWASP ASVS (v4)** | Advanced password storage, layered security, safe authentication handling |
-| **NIST SP 800-63B** | Strong password hashing, secure credential lifecycle |
-| **ISO-9001** | Process governance, controlled authentication flows |
-| **GDPR** | Data minimisation, privacy by design, strong credential protection |
+- All SEC documents are version-controlled
+- Changes require documented approval
+- Breaking policy changes must be version-incremented
+- Deprecated documents must not be silently altered
+
+---
+
+## 8. Standards Alignment
+
+The SEC domain aligns with:
+- ISO-9001 (process consistency and evidence)
+- GDPR (data minimisation, lawful processing)
+- OWASP ASVS (where logically applicable)
+
+---
+
+## 9. Change History
+
+| Version | Date | Author | Notes |
+|--------|------|--------|-------|
+| 1.0.0 | 2025-12-09 | Business Architect | Initial SEC domain master |
+| 1.1.0 | 2025-12-13 | Business Architect | Updated catalogue; formalised conventions; closed SEC-01 through SEC-06 |
+| **1.1.1** | **2025-12-13** | Business Architect | Added missing table captions; added domain structure and dependency Mermaid figures; caption placement aligned to standard |
+
+<div><sub><strong>Table 7 –</strong> Change history</sub></div>
